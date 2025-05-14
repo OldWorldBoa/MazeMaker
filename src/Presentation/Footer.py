@@ -10,7 +10,7 @@ class Footer(Frame):
         self.master = master
         self.fpsIndicator = FpsIndicator(self)
 
-    def pack(self):
+    def display(self):
         super().pack(expand=False, fill=X, pady=(5, 0))
 
-        self.fpsIndicator.pack()
+        self.fpsIndicator.display()

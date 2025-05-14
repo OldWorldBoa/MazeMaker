@@ -2,7 +2,7 @@ from tkinter import Button, Frame, LEFT, X, FLAT
 from pyeventbus3.pyeventbus3 import *
 
 from ..Business.Events.SelectToolEvent import SelectToolEvent
-from ..Business.Tools.Tool import Tool
+from .StyledTkinter import StyledTkinter
 from ..Business.Tools.DrawMazeTool import DrawMazeTool
 from ..Business.Tools.SaveTool import SaveTool
 from ..Business.Tools.LoadTool import LoadTool
@@ -29,12 +29,9 @@ class Menu(Frame):
         self.add_button("Edit Content", self.click_edit_content)
 
     def add_button(self, text, command):
-        self.buttons.append(
-            Button(self, text=text, command=command, relief=FLAT,
-                   bg="gray40", fg="gray88", activebackground="gray15",
-                   activeforeground="gray63"))
+        self.buttons.append(StyledTkinter.get_styled_button(self, text=text, command=command))
 
-    def pack(self):
+    def display(self):
         super().pack(expand=False, fill=X)
 
         for button in self.buttons:

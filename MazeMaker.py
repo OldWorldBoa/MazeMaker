@@ -7,7 +7,7 @@ if __name__ == "__main__":
     root.state('zoomed')
 
     app = AppMediator(root)
-    app.pack()
+    app.display()
     app.tick()
 
     root.mainloop()

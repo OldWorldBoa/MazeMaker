@@ -16,12 +16,13 @@ class MainFrame(Frame):
         self.graph_renderer = GraphRenderer(self)
         self.content_editor = ContentEditor(self)
 
-    def pack(self):
+    def display(self):
         super().pack(expand=True, fill=BOTH)
 
         self.hide_content_editor()
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
+        self.graph_renderer.display(row=0, column=0, sticky="nesw")
 
     def toggle_content_editor(self):
         if not self.content_editor_shown:
@@ -31,13 +32,11 @@ class MainFrame(Frame):
 
     def show_content_editor(self):
         self.columnconfigure(1, weight=1)
-        self.graph_renderer.grid(row=0, column=0, sticky="nesw", padx=(0, 15))
-        self.content_editor.grid(row=0, column=1, sticky="nesw")
+        self.content_editor.display(row=0, column=1, sticky="nesw", padx=(15, 0))
         self.content_editor_shown = True
 
     def hide_content_editor(self):
         self.columnconfigure(1, weight=0)
-        self.graph_renderer.grid(row=0, column=0, sticky="nesw", padx=(0, 0))
         self.content_editor.grid_forget()
         self.content_editor_shown = False
 

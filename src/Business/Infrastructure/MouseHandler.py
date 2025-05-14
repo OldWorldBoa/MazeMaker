@@ -1,3 +1,5 @@
+import time
+
 from pyeventbus3.pyeventbus3 import *
 
 from ..Tools.Tool import Tool
@@ -27,6 +29,8 @@ class MouseHandler(Tool):
         self.master.bind("<Button 1>", self.tool.mouse_click)
         self.master.bind("<Motion>", self.tool.mouse_move)
 
+        # Wait for a bit to make sure all UpdateGraphPreview commands have finished
+        time.sleep(0.1)
         PyBus.Instance().post(ResetGraphPreview())
 
         self.tool.run("EXECUTE")

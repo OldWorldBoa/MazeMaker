@@ -32,12 +32,12 @@ class AppMediator(Frame):
         self.key_press_handler = KeyPressHandler(master)
         self.mouse_handler = MouseHandler(self.content_frame.graph_renderer.canvas)
 
-    def pack(self):
+    def display(self):
         super().pack(expand=True, fill=BOTH)
 
-        self.menu.pack()
-        self.content_frame.pack()
-        self.footer.pack()
+        self.menu.display()
+        self.content_frame.display()
+        self.footer.display()
 
     def tick(self):
         self.footer.fpsIndicator.update_fps(self.tickNum)

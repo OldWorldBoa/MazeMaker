@@ -10,7 +10,7 @@ class FpsIndicator:
         self.current_fps = 0
         self.last_tick_num = 0
 
-    def pack(self):
+    def display(self):
         self.textBox.pack(side=RIGHT)
         self.textBox.insert(END, "...")
 
