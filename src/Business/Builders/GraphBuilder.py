@@ -106,20 +106,24 @@ class GraphBuilder:
                         self.fill_vertex(graph, other_vertices[i], filler_data[i])
 
     def fill_vertex(self, graph, vertex, content):
+        part_of_answer = content['part_of_answer']
         graph.get_vertex_data(vertex).content = content['question']
-        graph.get_vertex_data(vertex).part_of_answer = content['part_of_answer']
+        graph.get_vertex_data(vertex).part_of_answer = part_of_answer
 
         neighbours = graph.vertices[vertex]
         if not neighbours:
             return
 
         answers = content['fillers']
-        answers.append(content['answer'])
+        if not part_of_answer:
+            answers.append(content['answer'])
 
+        used_filler = 0
         for next_vertex in neighbours:
             edge_data = graph.get_edge_data(vertex, next_vertex)
 
             # This is set on the initial pass through with the actual solution, don't change those
             if not edge_data.content:
-                edge_data.content = answers[neighbours.index(next_vertex)]
+                edge_data.content = answers[used_filler]
+                used_filler += 1
                 edge_data.part_of_answer = False

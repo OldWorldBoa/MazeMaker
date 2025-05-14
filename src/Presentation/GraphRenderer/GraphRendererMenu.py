@@ -1,4 +1,5 @@
 from ..Menu import Menu
+from ..NumericEntry import NumericEntry
 from ...Business.Tools.DrawMazeTool import DrawMazeTool
 from ...Business.Events.SelectToolEvent import SelectToolEvent
 from ...Business.Events.ChangeQuestionWidth import ChangeQuestionWidth
@@ -8,7 +9,7 @@ from ...Business.Events.ChangeAnswerWidth import ChangeAnswerWidth
 from ...Business.Events.ToggleSolutionView import ToggleSolutionView
 
 from pyeventbus3.pyeventbus3 import *
-from tkinter import DISABLED, NORMAL, Tk
+from tkinter import DISABLED, NORMAL, Tk, StringVar
 
 
 # The click button command handlers require one parameter,
@@ -19,17 +20,55 @@ class GraphRendererMenu(Menu):
         super().__init__(master)
 
         self.master = master
-        self.add_button("Draw Maze", lambda: self.click_draw_maze())
+
+        self.question_height_key = "QHK"
+        self.question_width_key = "QWK"
+        self.answer_length_key = "ALK"
+        self.answer_width_key = "AWK"
+        self.entries = {}
+
+        self.add_button("Edit Maze Size", lambda: self.click_edit_maze_size())
         self.add_debounced_button("Show Solution", lambda: self.click_show_solution())
-        self.add_entry("Question Height: ", question_height, self.change_question_height)
-        self.add_entry("Question Width: ", question_width, self.change_question_width)
-        self.add_entry("Answer Length: ", answer_length, self.change_answer_length)
-        self.add_entry("Answer Width: ", answer_width, self.change_answer_width)
+        self.add_entry("Question Height: ", self.create_numeric_entry(self.question_height_key,
+                                                                      question_height,
+                                                                      self.change_question_height))
+
+        self.add_entry("Question Width: ", self.create_numeric_entry(self.question_width_key,
+                                                                     question_width,
+                                                                     self.change_question_width))
+
+        self.add_entry("Answer Length: ", self.create_numeric_entry(self.answer_length_key,
+                                                                    answer_length,
+                                                                    self.change_answer_length))
+
+        self.add_entry("Answer Width: ", self.create_numeric_entry(self.answer_width_key,
+                                                                   answer_width,
+                                                                   self.change_answer_width))
+
+    def create_numeric_entry(self, key, initial_value, callback):
+        value_container = StringVar()
+        value_container.trace_add("write", lambda x, y, z: callback(value_container.get()))
+
+        self.entries[key] = value_container
+
+        return NumericEntry(self, initial_value, width=5, textvariable=value_container)
+
+    def update_question_height(self, new_val):
+        self.entries[self.question_height_key].set(new_val)
+
+    def update_question_width(self, new_val):
+        self.entries[self.question_width_key].set(new_val)
+
+    def update_answer_length(self, new_val):
+        self.entries[self.answer_length_key].set(new_val)
+
+    def update_answer_width(self, new_val):
+        self.entries[self.answer_width_key].set(new_val)
 
     def display(self, **kwargs):
         super().display(pady=(5, 5), padx=(5, 0))
 
-    def click_draw_maze(self):
+    def click_edit_maze_size(self):
         PyBus.Instance().post(SelectToolEvent(DrawMazeTool()))
 
     def click_show_solution(self):

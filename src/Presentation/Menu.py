@@ -20,11 +20,8 @@ class Menu(Frame):
         self.elements.append(StyledTkinter.get_dark_button(self, text=text,
                                                            command=lambda: self.debounced_command(command)))
 
-    def add_entry(self, label_text, init_value, callback):
+    def add_entry(self, label_text, entry):
         label = Label(self, text=label_text)
-        value_container = StringVar()
-        entry = NumericEntry(self, init_value, width=5, textvariable=value_container)
-        value_container.trace_add("write", lambda x, y, z: callback(value_container.get()))
 
         self.elements.append(label)
         self.elements.append(entry)

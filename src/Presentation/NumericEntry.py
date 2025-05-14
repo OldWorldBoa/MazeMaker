@@ -11,11 +11,12 @@ class NumericEntry(Entry):
     @staticmethod
     def ensure_numeric_input(action, index, value_if_allowed, prior_value, text, validation_type, trigger_type,
                              widget_name):
-        if value_if_allowed:
-            try:
-                float(value_if_allowed)
-                return True
-            except ValueError:
-                return False
-        else:
+        try:
+            if not value_if_allowed:
+                value_if_allowed = 0
+
+            float(value_if_allowed)
+
+            return True
+        except ValueError:
             return False

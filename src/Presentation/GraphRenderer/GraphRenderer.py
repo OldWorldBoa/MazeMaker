@@ -34,8 +34,8 @@ class GraphRenderer(Frame):
         self.margin = 50
         self.question_height = 150
         self.question_width = 150
-        self.answer_length = 90
-        self.answer_width = 90
+        self.answer_length = 100
+        self.answer_width = 100
         self.rows = 0
         self.columns = 0
         self.preview_rows = 0
@@ -44,7 +44,8 @@ class GraphRenderer(Frame):
         self.synchronizer = Lock()
         self.current_work = None
         self.canvas = Canvas(self, bg=StyledTkinter.get_light_color())
-        self.menu = GraphRendererMenu(self, self.question_height,
+        self.menu = GraphRendererMenu(self,
+                                      self.question_height,
                                       self.question_width,
                                       self.answer_length,
                                       self.answer_width)
@@ -104,15 +105,16 @@ class GraphRenderer(Frame):
         self.draw()
 
     def draw(self):
-        self.canvas.delete("all")
-        self.canvas.children.clear()
-        self.drawn_edges.clear()
+        if hasattr(self, "graph") and self.graph:
+            self.canvas.delete("all")
+            self.canvas.children.clear()
+            self.drawn_edges.clear()
 
-        for vertex in self.graph.vertices.keys():
-            vertex_data = self.graph.get_vertex_data(vertex)
+            for vertex in self.graph.vertices.keys():
+                vertex_data = self.graph.get_vertex_data(vertex)
 
-            if vertex_data.type != GraphDataType.SKIP:
-                self.draw_vertex_with_edges(vertex)
+                if vertex_data.type != GraphDataType.SKIP:
+                    self.draw_vertex_with_edges(vertex)
 
     def draw_vertex_with_edges(self, vertex):
         data = self.graph.get_vertex_data(vertex)
@@ -196,7 +198,7 @@ class GraphRenderer(Frame):
 
         if not len(images):
             text_height = text.count("1.0", "end", "ypixels")[0]
-            top_margin = (height - text_height) / 2
+            top_margin = max((height - text_height) / 2, 0)
         else:
             top_margin = 0
 
@@ -230,7 +232,7 @@ class GraphRenderer(Frame):
             return -scale / 2 - self.answer_length
 
     def get_state_to_save(self):
-        return GraphRendererState(self.graph, self.rows, self.columns)
+        return GraphRendererState(self)
 
     def load_state(self, state):
         self.graph = state.graph
@@ -238,6 +240,19 @@ class GraphRenderer(Frame):
         self.preview_rows = state.rows
         self.columns = state.columns
         self.preview_columns = state.columns
+
+        if hasattr(state, "question_width"):
+            self.question_width = state.question_width
+            self.menu.update_question_width(state.question_width)
+        if hasattr(state, "question_height"):
+            self.question_height = state.question_height
+            self.menu.update_question_height(state.question_height)
+        if hasattr(state, "answer_length"):
+            self.answer_length = state.answer_length
+            self.menu.update_answer_length(state.answer_length)
+        if hasattr(state, "answer_width"):
+            self.answer_width = state.answer_width
+            self.menu.update_answer_width(state.answer_width)
 
     def get_border_color_for_node(self, data):
         if self.show_solution and data.part_of_answer:
