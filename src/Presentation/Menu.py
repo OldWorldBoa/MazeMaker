@@ -17,7 +17,7 @@ class Menu(Frame):
     def add_entry(self, label_text, init_value, callback):
         label = Label(self, text=label_text)
         value_container = StringVar()
-        entry = NumericEntry(self, init_value, textvariable=value_container)
+        entry = NumericEntry(self, init_value, width=5, textvariable=value_container)
         value_container.trace_add("write", lambda x, y, z: callback(value_container.get()))
 
         self.elements.append(label)

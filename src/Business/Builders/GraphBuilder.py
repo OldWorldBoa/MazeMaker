@@ -93,4 +93,4 @@ class GraphBuilder:
                     graph.get_vertex_data(vertex).content = self.content[i]['question']
                     graph.get_edge_data(vertex, next_vertex).content = self.content[i]['answer']
 
-                graph.get_vertex_data(path[num_data]).Content = {"text": "Finish", "placed_images": []}
+                graph.get_vertex_data(path[num_data]).content = {"text": "Finish", "placed_images": []}
