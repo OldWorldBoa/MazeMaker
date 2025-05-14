@@ -4,7 +4,8 @@ from tkinter import filedialog
 from pyeventbus3.pyeventbus3 import *
 
 from .Tool import Tool
-from ..Events.GraphLoaded import GraphLoaded
+from ..Events.GraphRendererStateLoaded import GraphRendererStateLoaded
+from ..Events.ContentLoaded import ContentLoaded
 
 
 class LoadTool(Tool):
@@ -17,5 +18,6 @@ class LoadTool(Tool):
             file = filedialog.askopenfilename(filetypes=files, defaultextension=files)
 
             if file != '':
-                graph = pickle.load(open(file, 'rb'))
-                PyBus.Instance().post(GraphLoaded(graph))
+                program_state = pickle.load(open(file, 'rb'))
+                PyBus.Instance().post(GraphRendererStateLoaded(program_state.graph_renderer_state))
+                PyBus.Instance().post(ContentLoaded(program_state.content))

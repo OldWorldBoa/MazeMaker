@@ -2,13 +2,20 @@ from tkinter import Frame, Entry, Label
 
 
 class ContentInput(Frame):
-    def __init__(self, master):
+    def __init__(self, master, load_data=None):
         super().__init__(master, bg="gray75")
 
         self.question_label = Label(self, bg="gray75", text="Question")
         self.question = Entry(self)
         self.answer_label = Label(self, bg="gray75", text="Answer")
         self.answer = Entry(self)
+
+        self.load(load_data)
+
+    def load(self, load_data):
+        if load_data is not None:
+            self.question.insert(0, load_data['question'])
+            self.answer.insert(0, load_data['answer'])
 
     def grid(self, **kwargs):
         super().grid(kwargs, sticky="new")

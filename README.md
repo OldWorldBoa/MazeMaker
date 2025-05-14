@@ -9,4 +9,7 @@
     - used with Pillow
   
 # Build an exe
-Run PyInstaller on the Main.py script.
+Run PyInstaller on the Main.py script like so:
+```commandline
+PyInstaller -F Main.py
+```

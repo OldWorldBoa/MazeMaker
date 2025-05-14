@@ -12,6 +12,7 @@ from ..Events.SaveToFile import SaveToFile
 from ..Events.ExportAsImage import ExportAsImage
 from .KeyPressHandler import KeyPressHandler
 from .MouseHandler import MouseHandler
+from ...Model.ProgramState import ProgramState
 
 
 class AppMediator(Frame):
@@ -45,7 +46,9 @@ class AppMediator(Frame):
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=SaveToFile)
     def save_to_file(self, event):
-        pickle.dump(self.content_frame.graph_renderer.graph, open(event.file, 'wb'))
+        save_object = ProgramState(self.content_frame.graph_renderer.get_state_to_save(),
+                                   self.content_frame.content_editor.get_savable_inputs())
+        pickle.dump(save_object, open(event.file, 'wb'))
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=ExportAsImage)
     def export_as_image(self, event):

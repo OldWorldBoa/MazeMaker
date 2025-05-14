@@ -1,13 +1,15 @@
 import math
 
+from threading import Lock
 from tkinter import Frame, Canvas, BOTH, SUNKEN
 from pyeventbus3.pyeventbus3 import *
 
 from ..Model.GraphDataType import GraphDataType
+from ..Model.GraphRendererState import GraphRendererState
 from ..Business.Builders.GraphBuilder import GraphBuilder
 from ..Business.Events.UpdateGraph import UpdateGraph
 from ..Business.Events.UpdateGraphPreview import UpdateGraphPreview
-from ..Business.Events.GraphLoaded import GraphLoaded
+from ..Business.Events.GraphRendererStateLoaded import GraphRendererStateLoaded
 from ..Business.Events.ResetGraphPreview import ResetGraphPreview
 from ..Business.Events.GraphChanged import GraphChanged
 from ..Business.Events.LoadGraphData import LoadGraphData
@@ -19,6 +21,7 @@ class GraphRenderer(Frame):
         super().__init__(master, borderwidth=1, relief=SUNKEN)
         PyBus.Instance().register(self, self.__class__.__name__)
 
+        self.synchronizer = Lock()
         self.canvas = Canvas(self, bg="gray82")
         self.graph = None
         self.content = None
@@ -140,6 +143,16 @@ class GraphRenderer(Frame):
         else:  # direction < 0
             return -self.width / 2 - self.padding
 
+    def get_state_to_save(self):
+        return GraphRendererState(self.graph, self.rows, self.columns)
+
+    def load_state(self, state):
+        self.graph = state.graph
+        self.rows = state.rows
+        self.preview_rows = state.rows
+        self.columns = state.columns
+        self.preview_columns = state.columns
+
     @staticmethod
     def get_color_for_graph_data_type(curr_type):
         if curr_type == GraphDataType.EXISTS:
@@ -153,27 +166,36 @@ class GraphRenderer(Frame):
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=UpdateGraph)
     def update_graph(self, event):
+        self.synchronizer.acquire()
         self.update_size(self.get_rows_from(event.y), self.get_columns_from(event.x))
         self.graph_changed()
+        self.synchronizer.release()
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=UpdateGraphPreview)
     def update_graph_preview(self, event):
+        self.synchronizer.acquire()
         self.update_preview_size(self.get_rows_from(event.y), self.get_columns_from(event.x))
+        self.synchronizer.release()
 
-    @subscribe(threadMode=Mode.BACKGROUND, onEvent=GraphLoaded)
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=GraphRendererStateLoaded)
     def load_graph(self, event):
-        self.graph = event.graph
+        self.synchronizer.acquire()
+        self.load_state(event.graph_renderer_state)
         self.draw()
-        self.graph_changed()
+        self.synchronizer.release()
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=ResetGraphPreview)
     def reset_when_tool_changes(self, event):
+        self.synchronizer.acquire()
         self.reset_preview()
+        self.synchronizer.release()
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=LoadGraphData)
     def load_graph_data(self, event):
+        self.synchronizer.acquire()
         self.content = event.content
         self.refresh_graph()
+        self.synchronizer.release()
 
     def graph_changed(self):
         PyBus.Instance().post(GraphChanged(self.rows, self.columns))

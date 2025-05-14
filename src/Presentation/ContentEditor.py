@@ -1,8 +1,10 @@
-from tkinter import Frame, Button
+from threading import Lock
+from tkinter import Frame
 from pyeventbus3.pyeventbus3 import *
 
 from ..Business.Events.GraphChanged import GraphChanged
 from ..Business.Events.LoadGraphData import LoadGraphData
+from ..Business.Events.ContentLoaded import ContentLoaded
 from ..Business.Builders.GraphBuilder import GraphBuilder
 from .ContentInput import ContentInput
 from .StyledTkinter import StyledTkinter
@@ -17,12 +19,26 @@ class ContentEditor(Frame):
         self.master = master
         self.generate_button = StyledTkinter.get_styled_button(self, text="Generate Maze", command=self.generate_maze)
         self.inputs = []
+        self.synchronizer = Lock()
 
     def grid(self, **kwargs):
         super().grid(kwargs, sticky="nesw")
 
         self.columnconfigure(0, weight=1)
         self.generate_button.grid(row=0, pady=(0, 10))
+
+    def get_savable_inputs(self):
+        return [x.get_as_dict() for x in self.inputs]
+
+    def load_saved_inputs(self, inputs):
+        for curr_input in self.inputs:
+            curr_input.grid_forget()
+        self.inputs = []
+
+        for i in range(0, len(inputs)):
+            loaded_input = ContentInput(self, inputs[i])
+            loaded_input.grid(row=i + 1, pady=(0, 5))
+            self.inputs.append(loaded_input)
 
     def generate_maze(self):
         content = [x.get_as_dict() for x in self.inputs if x.is_filled()]
@@ -64,5 +80,12 @@ class ContentEditor(Frame):
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=GraphChanged)
     def update_content_editor(self, event):
+        self.synchronizer.acquire()
         self.update_size(event.rows, event.columns)
+        self.synchronizer.release()
 
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ContentLoaded)
+    def load_content(self, event):
+        self.synchronizer.acquire()
+        self.load_saved_inputs(event.content)
+        self.synchronizer.release()
