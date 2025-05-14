@@ -92,9 +92,10 @@ class GraphBuilder:
                 for i in range(0, num_data):
                     vertex = path[i]
                     next_vertex = path[i + 1]
-                    content = self.content[i]
+                    content = self.solution_data[i]
 
                     graph.get_edge_data(vertex, next_vertex).content = content['answer']
+                    graph.get_edge_data(vertex, next_vertex).part_of_answer = True
                     self.fill_vertex(graph, vertex, content)
 
                 graph.get_vertex_data(path[num_data]).content = {"text": "Finish", "placed_images": []}
@@ -106,6 +107,7 @@ class GraphBuilder:
 
     def fill_vertex(self, graph, vertex, content):
         graph.get_vertex_data(vertex).content = content['question']
+        graph.get_vertex_data(vertex).part_of_answer = content['part_of_answer']
 
         neighbours = graph.vertices[vertex]
         if not neighbours:
@@ -116,5 +118,8 @@ class GraphBuilder:
 
         for next_vertex in neighbours:
             edge_data = graph.get_edge_data(vertex, next_vertex)
+
+            # This is set on the initial pass through with the actual solution, don't change those
             if not edge_data.content:
                 edge_data.content = answers[neighbours.index(next_vertex)]
+                edge_data.part_of_answer = False

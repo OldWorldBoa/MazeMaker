@@ -4,3 +4,4 @@ class GraphData:
         self.content = None
         self.x = x
         self.y = y
+        self.part_of_answer = False
