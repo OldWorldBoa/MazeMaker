@@ -13,7 +13,8 @@ class LoadTool(Tool):
 
     def run(self, command, **kwargs):
         if command == "EXECUTE":
-            file = filedialog.askopenfilename(defaultextension=".mmpy")
+            files = [('Maze Maker Saves', '*.mmpy')]
+            file = filedialog.askopenfilename(filetypes=files, defaultextension=files)
 
             if file != '':
                 graph = pickle.load(open(file, 'rb'))

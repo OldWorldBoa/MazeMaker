@@ -71,24 +71,20 @@ class BiDirectionalGraph:
     def get_edge_key(vertex, next_vertex):
         return min(vertex, next_vertex) + max(vertex, next_vertex)
 
-    def get_random_path(self, start, end, coverage_percent):
-        if (
-                start in self.vertices and
-                end in self.vertices and
-                2 / len(self.vertices) * 100 <= coverage_percent <= 100):
-
+    def get_random_path(self, start, end, length):
+        if (start in self.vertices and end in self.vertices):
             paths = self.find_all_paths(start, end)
-            paths_with_coverage = []
+            paths_with_length = []
 
             for path in paths:
-                if len(path) / len(self.vertices) * 100 >= coverage_percent:
-                    paths_with_coverage.append(path)
+                if len(path) == length:
+                    paths_with_length.append(path)
 
-            num_paths = len(paths_with_coverage)
+            num_paths = len(paths_with_length)
             if num_paths == 1:
-                return paths_with_coverage[0]
+                return paths_with_length[0]
             elif num_paths > 1:
-                return paths_with_coverage[randrange(num_paths)]
+                return paths_with_length[randrange(num_paths)]
 
         return []
 

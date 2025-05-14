@@ -11,6 +11,7 @@ class GraphBuilder:
         self.columns = 0
         self.previewRows = 0
         self.previewColumns = 0
+        self.content = None
 
     @clamp_negative_args
     def current(self, rows, columns):
@@ -26,8 +27,16 @@ class GraphBuilder:
 
         return self
 
+    def data(self, content):
+        self.content = content
+
+        return self
+
     def build(self):
-        return self.create_graph()
+        graph = self.create_graph()
+        self.add_data(graph)
+
+        return graph
 
     def create_graph(self):
         self.graph = BiDirectionalGraph()
@@ -66,3 +75,23 @@ class GraphBuilder:
             return GraphDataType.REMOVE
         else:
             return GraphDataType.SKIP
+
+    def add_data(self, graph):
+        if self.content is not None:
+            num_data = len(self.content)
+
+            path = graph.get_random_path(
+                "0,0",
+                str(self.rows - 1) + "," + str(self.columns - 1),
+                num_data + 1  # +1 for Finish square
+            )
+
+            if path:
+                for i in range(0, num_data):
+                    vertex = path[i]
+                    next_vertex = path[i + 1]
+
+                    graph.get_vertex_data(vertex).text = self.content[i]['question']
+                    graph.get_edge_data(vertex, next_vertex).text = self.content[i]['answer']
+
+                graph.get_vertex_data(path[num_data]).text = "Finish"

@@ -7,6 +7,7 @@ from ..Business.Tools.DrawMazeTool import DrawMazeTool
 from ..Business.Tools.SaveTool import SaveTool
 from ..Business.Tools.LoadTool import LoadTool
 from ..Business.Tools.ExportTool import ExportTool
+from ..Business.Tools.EditContentTool import EditContentTool
 
 
 # The click button command handlers require one parameter,
@@ -25,7 +26,7 @@ class Menu(Frame):
         self.add_button("Load", self.click_load)
         self.add_button("Export", self.click_export)
         self.add_button("Draw Maze", self.click_draw_maze)
-        self.add_button("Edit Text", self.click_edit_text)
+        self.add_button("Edit Content", self.click_edit_content)
 
     def add_button(self, text, command):
         self.buttons.append(
@@ -51,5 +52,5 @@ class Menu(Frame):
     def click_draw_maze(click_event):
         PyBus.Instance().post(SelectToolEvent(DrawMazeTool()))
 
-    def click_edit_text(click_event):
-        PyBus.Instance().post(SelectToolEvent(Tool()))
+    def click_edit_content(click_event):
+        PyBus.Instance().post(SelectToolEvent(EditContentTool()))

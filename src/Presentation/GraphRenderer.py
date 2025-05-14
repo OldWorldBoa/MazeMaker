@@ -8,6 +8,9 @@ from ..Business.Builders.GraphBuilder import GraphBuilder
 from ..Business.Events.UpdateGraph import UpdateGraph
 from ..Business.Events.UpdateGraphPreview import UpdateGraphPreview
 from ..Business.Events.GraphLoaded import GraphLoaded
+from ..Business.Events.ResetGraphPreview import ResetGraphPreview
+from ..Business.Events.GraphChanged import GraphChanged
+from ..Business.Events.LoadGraphData import LoadGraphData
 from ..Business.Decorators.ClampNegativeArgs import clamp_negative_args
 
 
@@ -18,17 +21,18 @@ class GraphRenderer(Frame):
 
         self.canvas = Canvas(self, bg="gray82")
         self.graph = None
+        self.content = None
         self.drawn_edges = []
         self.height = 100
         self.width = 100
         self.padding = 50
         self.rows = 0
         self.columns = 0
-        self.previewRows = 0
-        self.previewColumns = 0
+        self.preview_rows = 0
+        self.preview_columns = 0
 
-    def pack(self):
-        super().pack(fill=BOTH, expand=True)
+    def grid(self, **kwargs):
+        super().grid(kwargs)
         self.canvas.pack(fill=BOTH, expand=True)
 
     @clamp_negative_args
@@ -47,26 +51,30 @@ class GraphRenderer(Frame):
 
     @clamp_negative_args
     def update_preview_size(self, preview_rows, preview_columns):
-        if self.previewRows != preview_rows or self.previewColumns != preview_columns:
-            self.previewRows = preview_rows
-            self.previewColumns = preview_columns
+        if self.preview_rows != preview_rows or self.preview_columns != preview_columns:
+            self.preview_rows = preview_rows
+            self.preview_columns = preview_columns
 
             try:
                 self.refresh_graph()
-            except AttributeError as ae:
-                print("Error updating preview size to ", preview_rows, "rows and", preview_columns,
-                      "columns. Error message:", ae)
+            except AttributeError:
+                # This is a race condition where the user is moving their mouse very fast and
+                # we are getting multiple updates sent at the same time. The most recent call
+                # changes the graph, and there is a possibility that the previous execution bombs.
+                # This is acceptable since we always want the latest update to overwrite the old.
+                pass
 
     def reset_preview(self):
-        if self.previewRows != self.rows or self.previewColumns != self.columns:
-            self.previewRows = self.rows
-            self.previewColumns = self.columns
+        if self.preview_rows != self.rows and self.preview_columns != self.columns:
+            self.preview_rows = self.rows
+            self.preview_columns = self.columns
             self.refresh_graph()
 
     def refresh_graph(self):
         self.graph = GraphBuilder() \
             .current(self.rows, self.columns) \
-            .preview(self.previewRows, self.previewColumns) \
+            .preview(self.preview_rows, self.preview_columns) \
+            .data(self.content) \
             .build()
 
         self.draw()
@@ -146,6 +154,7 @@ class GraphRenderer(Frame):
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=UpdateGraph)
     def update_graph(self, event):
         self.update_size(self.get_rows_from(event.y), self.get_columns_from(event.x))
+        self.graph_changed()
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=UpdateGraphPreview)
     def update_graph_preview(self, event):
@@ -155,6 +164,19 @@ class GraphRenderer(Frame):
     def load_graph(self, event):
         self.graph = event.graph
         self.draw()
+        self.graph_changed()
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ResetGraphPreview)
+    def reset_when_tool_changes(self, event):
+        self.reset_preview()
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=LoadGraphData)
+    def load_graph_data(self, event):
+        self.content = event.content
+        self.refresh_graph()
+
+    def graph_changed(self):
+        PyBus.Instance().post(GraphChanged(self.rows, self.columns))
 
     def get_rows_from(self, y):
         return math.ceil((y - self.padding) / (self.width + self.padding))

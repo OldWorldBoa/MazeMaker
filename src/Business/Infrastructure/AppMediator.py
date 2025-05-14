@@ -1,12 +1,17 @@
+import pickle
+import io
+
+from PIL import Image
 from tkinter import Frame, BOTH
 from pyeventbus3.pyeventbus3 import *
 
 from ...Presentation.Footer import Footer
-from ...Presentation.GraphRenderer import GraphRenderer
+from ...Presentation.MainFrame import MainFrame
 from ...Presentation.Menu import Menu
-from ..Events.SelectToolEvent import SelectToolEvent
-from ..Tools.Tool import Tool
+from ..Events.SaveToFile import SaveToFile
+from ..Events.ExportAsImage import ExportAsImage
 from .KeyPressHandler import KeyPressHandler
+from .MouseHandler import MouseHandler
 
 
 class AppMediator(Frame):
@@ -19,20 +24,18 @@ class AppMediator(Frame):
         self.master.title("Maze Maker")
 
         self.menu = Menu(self)
-        self.graphRenderer = GraphRenderer(self)
+        self.content_frame = MainFrame(self)
         self.footer = Footer(self)
 
         self.tickNum = 0
-        self.tool = Tool()
-        self.keyPressHandler = KeyPressHandler(master)
+        self.key_press_handler = KeyPressHandler(master)
+        self.mouse_handler = MouseHandler(self.content_frame.graph_renderer.canvas)
 
     def pack(self):
         super().pack(expand=True, fill=BOTH)
 
         self.menu.pack()
-        self.graphRenderer.pack()
-        self.graphRenderer.update_size(3, 4)
-        self.graphRenderer.update_preview_size(3, 4)
+        self.content_frame.pack()
         self.footer.pack()
 
     def tick(self):
@@ -40,10 +43,13 @@ class AppMediator(Frame):
         self.tickNum += 1
         self.master.after(10, self.tick)
 
-    @subscribe(threadMode=Mode.BACKGROUND, onEvent=SelectToolEvent)
-    def select_tool(self, event):
-        self.tool = event.tool
-        self.tool.run("EXECUTE", graph=self.graphRenderer.graph, canvas=self.graphRenderer.canvas)
-        self.graphRenderer.reset_preview()
-        self.graphRenderer.canvas.bind("<Button 1>", self.tool.mouse_click)
-        self.graphRenderer.canvas.bind("<Motion>", self.tool.mouse_move)
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=SaveToFile)
+    def save_to_file(self, event):
+        pickle.dump(self.content_frame.graph_renderer.graph, open(event.file, 'wb'))
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ExportAsImage)
+    def export_as_image(self, event):
+        canvas = self.content_frame.graph_renderer.canvas
+        ps = canvas.postscript(colormode='color')
+        im = Image.open(io.BytesIO(ps.encode('utf-8')))
+        im.save(event.file + '.jpg')

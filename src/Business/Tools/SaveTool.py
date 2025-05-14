@@ -1,8 +1,8 @@
-import pickle
-
+from pyeventbus3.pyeventbus3 import *
 from tkinter import filedialog
 
 from .Tool import Tool
+from ..Events.SaveToFile import SaveToFile
 
 
 class SaveTool(Tool):
@@ -11,8 +11,9 @@ class SaveTool(Tool):
 
     def run(self, command, **kwargs):
         if command == "EXECUTE":
-            file = filedialog.asksaveasfilename(defaultextension=".mmpy")
+            files = [('Maze Maker Saves', '*.mmpy')]
+            file = filedialog.asksaveasfilename(filetypes=files,defaultextension=files)
 
             if file != '':
-                graph = kwargs["graph"]
-                pickle.dump(graph, open(file, 'wb'))
+                PyBus.Instance().post(SaveToFile(file))
+

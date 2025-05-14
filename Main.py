@@ -4,7 +4,7 @@ from src.Business.Infrastructure.AppMediator import AppMediator
 
 if __name__ == "__main__":
     root = Tk()
-    root.geometry("700x600")
+    root.state('zoomed')
 
     app = AppMediator(root)
     app.pack()

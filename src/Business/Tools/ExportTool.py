@@ -1,9 +1,9 @@
-import io
 
-from PIL import Image
 from tkinter import filedialog
+from pyeventbus3.pyeventbus3 import *
 
 from .Tool import Tool
+from ..Events.ExportAsImage import ExportAsImage
 
 
 class ExportTool(Tool):
@@ -12,8 +12,7 @@ class ExportTool(Tool):
 
     def run(self, command, **kwargs):
         if command == "EXECUTE":
-            file = filedialog.asksaveasfilename(defaultextension=".jpg")
-            canvas = kwargs["canvas"]
-            ps = canvas.postscript(colormode='color')
-            im = Image.open(io.BytesIO(ps.encode('utf-8')))
-            im.save(file + '.jpg')
+            files = [('JPEG', '*.jpg')]
+            file = filedialog.asksaveasfilename(filetypes=files, defaultextension=files)
+
+            PyBus.Instance().post(ExportAsImage(file))
