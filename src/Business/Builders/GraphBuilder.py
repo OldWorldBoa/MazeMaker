@@ -82,7 +82,6 @@ class GraphBuilder:
 
             path = graph.get_random_path(
                 "0,0",
-                str(self.rows - 1) + "," + str(self.columns - 1),
                 num_data + 1  # +1 for Finish square
             )
 

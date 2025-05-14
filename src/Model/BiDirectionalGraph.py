@@ -71,41 +71,37 @@ class BiDirectionalGraph:
     def get_edge_key(vertex, next_vertex):
         return min(vertex, next_vertex) + max(vertex, next_vertex)
 
-    def get_random_path(self, start, end, length):
-        if (start in self.vertices and end in self.vertices):
-            paths = self.find_all_paths(start, end)
-            paths_with_length = []
+    def get_random_path(self, start, length):
+        if start in self.vertices:
+            done = False
 
-            for path in paths:
-                if len(path) == length:
-                    paths_with_length.append(path)
+            visited_paths = BiDirectionalGraph()
+            visited_paths.add_vertex(start)
+            curr_path = [start]
+            curr_vertex = start
 
-            num_paths = len(paths_with_length)
-            if num_paths == 1:
-                return paths_with_length[0]
-            elif num_paths > 1:
-                return paths_with_length[randrange(num_paths)]
+            while not done:
+                visited_neighbours = visited_paths.vertices[curr_vertex]
+                vertex_neighbours = self.vertices[curr_vertex]
+                available_neighbours = [x for x in vertex_neighbours if x not in visited_neighbours]
+                num_neighbours = len(available_neighbours)
 
-        return []
+                if num_neighbours == 0:
+                    curr_path.pop()
+                    curr_vertex = curr_path[-1]
 
-    def find_all_paths(self, start, end, path=None):
-        if path is None:
-            path = []
+                    if not curr_path:
+                        done = True
+                else:
+                    next_vertex = available_neighbours[randrange(num_neighbours)]
+                    visited_paths.add_vertex(next_vertex)
+                    visited_paths.add_edge(curr_vertex, next_vertex)
+                    curr_path.append(next_vertex)
+                    curr_vertex = next_vertex
 
-        if start not in self.vertices or end not in self.vertices:
+                    if len(curr_path) >= length:
+                        done = True
+
+            return curr_path
+        else:
             return []
-
-        path.append(start)
-
-        if start == end:
-            return [path]
-
-        paths = []
-
-        for vertex in self.vertices[start]:
-            if vertex not in path:
-                new_paths = self.find_all_paths(vertex, end, path.copy())
-                for new_path in new_paths:
-                    paths.append(new_path)
-
-        return paths

@@ -26,5 +26,9 @@ class StyledTkinter:
         return "gray88"
 
     @staticmethod
+    def get_medium_color():
+        return "gray75"
+
+    @staticmethod
     def get_dark_color():
         return "gray40"

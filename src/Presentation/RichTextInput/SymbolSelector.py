@@ -1,35 +1,60 @@
 import math
-from tkinter import Toplevel, Frame, TOP, LEFT, X, font
+
+from functools import partial
+from tkinter import Toplevel, Frame, TOP, LEFT, X, font, CENTER
 
 from ..StyledTkinter import StyledTkinter
 
 
 # This class helps to select unicode symbols
 class SymbolSelector(Toplevel):
-    def __init__(self, master, x, y):
-        super().__init__(master, takefocus=True)
+    def __init__(self, master, x, y, input_symbol_callback):
+        super().__init__(master, takefocus=True, borderwidth=2, highlightbackground="red")
 
+        self.master = master
         self.overrideredirect(1)
-        self.geometry('%dx%d+%d+%d' % (150, 150, x, y))
+        self.geometry('%dx%d+%d+%d' % (200, 225, x, y))
+        self.bind("<FocusOut>", self.close)
+        self.bind("<Escape>", self.close)
 
-        self.category_frame = Frame(self)
+        self.input_symbol_callback = input_symbol_callback
+
+        self.category_frame = Frame(self, bg=StyledTkinter.get_dark_color())
         self.category_buttons = [
-            StyledTkinter.get_dark_button(self.category_frame, text='\u00F7', command=self.select_math_symbols),
-            StyledTkinter.get_dark_button(self.category_frame, text='\u03C0', command=self.select_greek_symbols),
-            StyledTkinter.get_dark_button(self.category_frame, text='\u00E9', command=self.select_accent_symbols),
-            StyledTkinter.get_dark_button(self.category_frame, text='\u0024', command=self.select_business_symbols)
+            StyledTkinter.get_dark_button(self.category_frame,
+                                          text='\u00F7',
+                                          width=3,
+                                          font=font.Font(size=16),
+                                          command=self.select_math_symbols),
+            StyledTkinter.get_dark_button(self.category_frame,
+                                          text='\u03C0',
+                                          width=3,
+                                          font=font.Font(size=16),
+                                          command=self.select_greek_symbols),
+            StyledTkinter.get_dark_button(self.category_frame,
+                                          text='\u00E9',
+                                          width=3,
+                                          font=font.Font(size=16),
+                                          command=self.select_accent_symbols),
+            StyledTkinter.get_dark_button(self.category_frame,
+                                          text='\u0024',
+                                          width=3,
+                                          font=font.Font(size=16),
+                                          command=self.select_business_symbols)
         ]
 
-        self.greek_symbol_frame = Frame(self)
-        self.math_symbol_frame = Frame(self)
-        self.accent_symbol_frame = Frame(self)
-        self.business_symbol_frame = Frame(self)
+        self.category_spacer = Frame(self, bg=StyledTkinter.get_light_color())
+
+        self.greek_symbol_frame = Frame(self, bg=StyledTkinter.get_dark_color())
+        self.math_symbol_frame = Frame(self, bg=StyledTkinter.get_dark_color())
+        self.accent_symbol_frame = Frame(self, bg=StyledTkinter.get_dark_color())
+        self.business_symbol_frame = Frame(self, bg=StyledTkinter.get_dark_color())
 
         self.greek_symbols = []
         self.math_symbols = []
         self.accent_symbols = []
         self.business_symbols = []
-        self.width = 7
+        self.width = 5
 
         self.init_greek_symbols()
         self.init_math_symbols()
@@ -74,9 +99,8 @@ class SymbolSelector(Toplevel):
 
     def init_math_symbols(self):
         self.math_symbols = [
-            '\u03C0',  # PI
             '\u00F7',  # Division
-            '\u0095',  # Dot Multiplication
+            '\u00B7',  # Dot Multiplication
             '\u00B0',  # Degree
             '\u00B1',  # Plus/Minus
             '\u2070',  # Power of Zero
@@ -96,6 +120,8 @@ class SymbolSelector(Toplevel):
             '\u221C',  # Fourth Root
             '\u221E',  # Infinity
             '\u2260',  # Not equal
+            '\u2220',  # Angle
+            '\u03C0',  # PI
         ]
 
         self.init_frame(self.math_symbol_frame, len(self.math_symbols))
@@ -133,21 +159,24 @@ class SymbolSelector(Toplevel):
 
     def init_business_symbols(self):
         self.business_symbols = [
-            '\u0080',  # Euro
-            '\u0090',  # TM
             '\u00A2',  # Cent
             '\u00A3',  # Pound
             '\u00A4',  # Currency
             '\u00A5',  # Yen
+            '\u058F',  # Armenian Dram
+            '\u20A3',  # French Franc
+            '\u20A8',  # Rupee
+            '\u20A9',  # Won
+            '\u20AC',  # Euro
             '\u00A7',  # Section
             '\u00A9',  # Copyright
             '\u00AE',  # Registered
+            '\u2117',  # Sound Copyright sign
+            '\u2122',  # Trademark
             '\u2052',  # Commercial Minus
             '\u20A0',  # Euro-Currency Sign
             '\u20BF',  # Bitcoin
             '\u2116',  # Numero sign
-            '\u2117',  # Sound Copyright sign
-            '\u2122',  # Trademark
         ]
 
         self.init_frame(self.business_symbol_frame, len(self.business_symbols))
@@ -164,14 +193,16 @@ class SymbolSelector(Toplevel):
         curr_row = 0
         curr_col = 0
         for symbol in symbols:
+            select_current_symbol = partial(self.select_symbol, symbol)
             symbol_button = StyledTkinter.get_dark_button(
                 frame,
                 text=symbol,
-                font=font.Font(size=18),
-                command=lambda: self.select_symbol(symbol))
+                font=font.Font(size=16),
+                height=20,
+                command=select_current_symbol)
             symbol_button.grid(row=curr_row, column=curr_col, sticky="news")
 
-            if curr_col >= self.width:
+            if curr_col >= self.width - 1:
                 curr_row = curr_row + 1
                 curr_col = 0
             else:
@@ -180,8 +211,9 @@ class SymbolSelector(Toplevel):
     def display(self):
         self.category_frame.pack(side=TOP, fill=X)
         for button in self.category_buttons:
-            button.pack(side=LEFT)
+            button.pack(fill=X, side=LEFT, expand=1)
 
+        self.category_spacer.pack(side=TOP, fill=X, expand=True)
         self.math_symbol_frame.pack(side=TOP, fill=X, expand=True)
 
     def select_greek_symbols(self):
@@ -209,4 +241,9 @@ class SymbolSelector(Toplevel):
         self.math_symbol_frame.pack_forget()
 
     def select_symbol(self, symbol):
+        self.input_symbol_callback(symbol)
+        self.close()
+
+    def close(self, evt):
+        self.master.focus_set()
         self.destroy()

@@ -8,23 +8,25 @@ from src.Presentation.RichTextInput.RichTextInput import RichTextInput
 
 class ContentInput(Frame):
     def __init__(self, master, question_number, load_data=None):
-        super().__init__(master, bg="gray75")
+        super().__init__(master, bg=StyledTkinter.get_medium_color())
 
         self.display_open = False
         self.question_number = question_number
 
-        self.header_border = Frame(self, bg="gray40")
-        self.header = Frame(self.header_border, bg="gray75")
+        self.header_border = Frame(self, bg=StyledTkinter.get_dark_color())
+        self.header = Frame(self.header_border, bg=StyledTkinter.get_medium_color())
         self.toggle_text = StringVar(value="+")
         self.toggle_display = StyledTkinter.get_dark_button(self.header,
                                                             textvariable=self.toggle_text,
                                                             command=self.toggle_input_display,
                                                             width=2)
-        self.toggle_display_label = Label(self.header, bg="gray75", text="Question " + str(question_number + 1))
+        self.toggle_display_label = Label(self.header,
+                                          bg=StyledTkinter.get_medium_color(),
+                                          text="Question " + str(question_number + 1))
 
-        self.question_label = Label(self, bg="gray75", text="Question")
+        self.question_label = Label(self, bg=StyledTkinter.get_medium_color(), text="Question")
         self.question = RichTextInput(self)
-        self.answer_label = Label(self, bg="gray75", text="Answer")
+        self.answer_label = Label(self, bg=StyledTkinter.get_medium_color(), text="Answer")
         self.answer = RichTextInput(self)
 
         self.load(load_data)
@@ -79,9 +81,9 @@ class ContentInput(Frame):
             self.answer.insert(0, load_data['answer'])
 
     def is_filled(self):
-        if self.question.get() != "" and self.answer.get() != "":
+        if self.question.get_text() != "" and self.answer.get_text() != "":
             return True
         return False
 
     def get_as_dict(self):
-        return {'question': self.question.get(), 'answer': self.answer.get()}
+        return {'question': self.question.get_text(), 'answer': self.answer.get_text()}

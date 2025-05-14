@@ -74,7 +74,7 @@ class ContentEditor(Frame):
         PyBus.Instance().post(LoadGraphData(content))
 
     def update_size(self, rows, columns):
-        max_path_length = ContentEditor.get_max_path_length(rows, columns) - 1  # -1 for Finish square
+        max_path_length = (rows * columns) - 1  # -1 for Finish square
         curr_length = len(self.inputs)
 
         if 0 <= curr_length < max_path_length:
@@ -90,21 +90,6 @@ class ContentEditor(Frame):
 
             for i in range(0, len(entries_to_hide)):
                 entries_to_hide[i].grid_forget()
-
-    @staticmethod
-    def get_max_path_length(rows, columns):
-        if rows > 0 and columns > 0:
-            graph = GraphBuilder() \
-                .current(rows, columns) \
-                .preview(rows, columns) \
-                .build()
-
-            paths = graph.find_all_paths('0,0', str(rows - 1) + ',' + str(columns - 1))
-            path_lengths = [len(i) for i in paths]
-
-            return max(path_lengths)
-        else:
-            return 0
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=CloseOtherInputs)
     def close_other_content_inputs(self, event):

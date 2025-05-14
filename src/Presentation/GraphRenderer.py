@@ -61,7 +61,7 @@ class GraphRenderer(Frame):
         if self.preview_rows != preview_rows or self.preview_columns != preview_columns:
             self.preview_rows = preview_rows
             self.preview_columns = preview_columns
-            self.refresh_graph()
+            self.refresh_graph(redraw_data=False)
 
     def reset_preview(self):
         if self.preview_rows != self.rows or self.preview_columns != self.columns:
@@ -69,11 +69,11 @@ class GraphRenderer(Frame):
             self.preview_columns = self.columns
             self.refresh_graph()
 
-    def refresh_graph(self):
+    def refresh_graph(self, redraw_data=True):
         self.graph = GraphBuilder() \
             .current(self.rows, self.columns) \
             .preview(self.preview_rows, self.preview_columns) \
-            .data(self.content) \
+            .data(self.content if redraw_data else None) \
             .build()
 
         self.draw()
