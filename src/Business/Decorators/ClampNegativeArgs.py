@@ -6,7 +6,7 @@ def clamp_negative_args(func):
         new_args = []
         for arg in args:
             if isinstance(arg, numbers.Number):
-                new_args.append(max(0, arg))
+                new_args.append(max(arg, 0))
             else:
                 new_args.append(arg)
 

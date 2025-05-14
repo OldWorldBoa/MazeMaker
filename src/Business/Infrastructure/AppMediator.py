@@ -31,8 +31,8 @@ class AppMediator(Frame):
 
         self.menu.pack()
         self.graphRenderer.pack()
-        self.graphRenderer.updateSize(4, 4)
-        self.graphRenderer.updatePreviewSize(4, 4)
+        self.graphRenderer.update_size(3, 4)
+        self.graphRenderer.update_preview_size(3, 4)
         self.footer.pack()
 
     def tick(self):
@@ -44,6 +44,6 @@ class AppMediator(Frame):
     def select_tool(self, event):
         self.tool = event.tool
         self.tool.run("EXECUTE", graph=self.graphRenderer.graph, canvas=self.graphRenderer.canvas)
-        self.graphRenderer.resetPreview()
+        self.graphRenderer.reset_preview()
         self.graphRenderer.canvas.bind("<Button 1>", self.tool.mouse_click)
         self.graphRenderer.canvas.bind("<Motion>", self.tool.mouse_move)
