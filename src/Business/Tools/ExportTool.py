@@ -12,7 +12,7 @@ class ExportTool(Tool):
 
     def run(self, command, **kwargs):
         if command == "EXECUTE":
-            files = [('JPEG', '*.jpg')]
+            files = [('PNG', '*.png')]
             file = filedialog.asksaveasfilename(filetypes=files, defaultextension=files)
 
             PyBus.Instance().post(ExportAsImage(file))

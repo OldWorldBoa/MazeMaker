@@ -1,8 +1,10 @@
 import win32print
-import win32ui
-from PIL import Image, ImageWin
+import win32api
+import img2pdf
+import os
 
-from tkinter import Toplevel, StringVar, Label, ttk
+
+from tkinter import Toplevel, StringVar, Label, ttk, Canvas, filedialog
 
 from .StyledTkinter import StyledTkinter
 
@@ -11,18 +13,24 @@ class PrintDialogue(Toplevel):
     def __init__(self):
         super().__init__()
 
-        self.done_button = StyledTkinter.get_styled_button(self, text="Print", command=lambda: self.print())
-        self.info = Label(self, text="select Printer")
+        self.temp_png_file = "C:\\temp\\mm_tmp.png"
+        self.temp_pdf_file = "C:\\temp\\mm_tmp.pdf"
+        self.pdf_printer_name = "Print to PDF"
+        self.done_button = StyledTkinter.get_styled_button(self, text="Print", command=lambda: self.complete_print())
+        self.info = Label(self, text="Select Printer")
+        self.preview = Canvas(self)
         self.printers = ttk.Combobox(self, width=35, textvariable=StringVar())
         self.printers['values'] = self.get_printers()
 
-    @staticmethod
-    def get_printers():
-        print_list = []
+        self.virtual_margin = 100
 
+    def get_printers(self):
+        print_list = [self.pdf_printer_name]
         printers = list(win32print.EnumPrinters(2))
+
         for i in printers:
-            print_list.append(i[2])
+            if "pdf" not in i[2].lower():
+                print_list.append(i[2])
 
         return print_list
 
@@ -33,78 +41,30 @@ class PrintDialogue(Toplevel):
 
         self.title("Print maze")
 
-    def print(self):
-        #
-        # Constants for GetDeviceCaps
-        #
-        #
-        # HORZRES / VERTRES = printable area
-        #
-        HORZRES = 8
-        VERTRES = 10
-        #
-        # LOGPIXELS = dots per inch
-        #
-        LOGPIXELSX = 88
-        LOGPIXELSY = 90
-        #
-        # PHYSICALWIDTH/HEIGHT = total area
-        #
-        PHYSICALWIDTH = 110
-        PHYSICALHEIGHT = 111
-        #
-        # PHYSICALOFFSETX/Y = left / top margin
-        #
-        PHYSICALOFFSETX = 112
-        PHYSICALOFFSETY = 113
-
-        file_name = "C:\\temp\\mm_tmp.jpg"
-
-        #
-        # You can only write a Device-independent bitmap
-        #  directly to a Windows device context; therefore
-        #  we need (for ease) to use the Python Imaging
-        #  Library to manipulate the image.
-        #
-        # Create a device context from a named printer
-        #  and assess the printable size of the paper.
-        #
-        hDC = win32ui.CreateDC()
-        hDC.CreatePrinterDC(self.printers.get())
-        printable_area = hDC.GetDeviceCaps(HORZRES), hDC.GetDeviceCaps(VERTRES)
-        printer_size = hDC.GetDeviceCaps(PHYSICALWIDTH), hDC.GetDeviceCaps(PHYSICALHEIGHT)
-        printer_margins = hDC.GetDeviceCaps(PHYSICALOFFSETX), hDC.GetDeviceCaps(PHYSICALOFFSETY)
-
-        #
-        # Open the image, rotate it if it's wider than
-        #  it is high, and work out how much to multiply
-        #  each pixel by to get it as big as possible on
-        #  the page without distorting.
-        #
-        bmp = Image.open(file_name)
-        if bmp.size[0] > bmp.size[1]:
-            bmp = bmp.rotate(90)
-
-        ratios = [1.0 * printable_area[0] / bmp.size[0], 1.0 * printable_area[1] / bmp.size[1]]
-        scale = min(ratios)
-
-        #
-        # Start the print job, and draw the bitmap to
-        #  the printer device at the scaled size.
-        #
-        hDC.StartDoc(file_name)
-        hDC.StartPage()
-
-        dib = ImageWin.Dib(bmp)
-        scaled_width, scaled_height = [int(scale * i) for i in bmp.size]
-        x1 = int((printer_size[0] - scaled_width) / 2)
-        y1 = int((printer_size[1] - scaled_height) / 2)
-        x2 = x1 + scaled_width
-        y2 = y1 + scaled_height
-        dib.draw(hDC.GetHandleOutput(), (x1, y1, x2, y2))
-
-        hDC.EndPage()
-        hDC.EndDoc()
-        hDC.DeleteDC()
-
+    def complete_print(self):
+        self.print()
         self.destroy()
+
+    def print_to_pdf(self, f_name=''):
+        if f_name != '':
+            print_file = f_name
+        else:
+            files = [('PDF', '*.pdf')]
+            file = filedialog.asksaveasfilename(filetypes=files, defaultextension=files)
+            print_file = file
+
+        if print_file == '' or print_file is None:
+            return
+
+        with open(print_file, "wb") as f:
+            f.write(img2pdf.convert(self.temp_png_file))
+
+    def print(self):
+        printer_name = self.printers.get()
+
+        if printer_name == self.pdf_printer_name:
+            self.print_to_pdf()
+        else:
+            self.print_to_pdf(self.temp_pdf_file)
+            win32print.SetDefaultPrinter(printer_name)
+            os.startfile(self.temp_pdf_file, "print")
