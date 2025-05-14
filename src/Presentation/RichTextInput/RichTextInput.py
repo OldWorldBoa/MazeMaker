@@ -12,6 +12,7 @@ class RichTextInput(Frame):
         self.menu = RichTextInputMenu(self, self.input_symbol, self.set_input_image)
         self.input = Text(self, height=8, font=font.Font(size=16))
         self.images = {}
+        self.image_cache = []
 
     def display(self, **kwargs):
         super().grid(kwargs)
@@ -28,8 +29,11 @@ class RichTextInput(Frame):
         pil_image.thumbnail(size)
         key = self.get_image_key(filename)
 
-        self.images[key] = ImageTk.PhotoImage(pil_image)
-        self.input.image_create(INSERT, image=self.images[key], name=key)
+        self.images[key] = pil_image
+
+        shown_image = ImageTk.PhotoImage(pil_image)
+        self.image_cache.append(shown_image)
+        self.input.image_create(INSERT, image=shown_image, name=key)
 
     def get_image_key(self, filename):
         key = filename
@@ -48,12 +52,23 @@ class RichTextInput(Frame):
         for key in self.images.keys():
             try:
                 index = self.input.index(key)
-                indexed_image = {"index": index, "image": self.images[key]}
+                indexed_image = {"index": index, "key": key, "image": self.images[key]}
                 placed_images.append(indexed_image)
             except TclError:
                 pass
 
         return {"text": text, "placed_images": placed_images}
+
+    def load_content(self, load_data):
+        self.input.insert("1.0", load_data["text"])
+
+        images = load_data["placed_images"]
+        if images:
+            for image in images:
+                self.images[image["key"]] = image["image"]
+                shown_image = ImageTk.PhotoImage(image["image"])
+                self.image_cache.append(shown_image)
+                self.input.image_create(image["index"], image=shown_image)
 
     def insert(self, index, content):
         self.input.insert(index, content)

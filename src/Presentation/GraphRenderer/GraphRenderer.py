@@ -2,6 +2,8 @@ import math
 
 from threading import Lock
 from tkinter import Frame, Canvas, BOTH, SUNKEN, Text, font, DISABLED, FLAT, X, Label
+
+from PIL import ImageTk
 from pyeventbus3.pyeventbus3 import *
 
 from src.Presentation.StyledTkinter import StyledTkinter
@@ -49,6 +51,7 @@ class GraphRenderer(Frame):
         self.graph = None
         self.content = None
         self.drawn_edges = []
+        self.image_cache = []
         self.show_solution = False
 
     def display(self, **kwargs):
@@ -180,7 +183,9 @@ class GraphRenderer(Frame):
         images = data.content["placed_images"]
         if images:
             for image in images:
-                text.image_create(image["index"], image=image["image"])
+                shown_image = ImageTk.PhotoImage(image["image"])
+                self.image_cache.append(shown_image)
+                text.image_create(image["index"], image=shown_image)
 
         text.tag_configure("center", justify='center')
         text.tag_add("center", "1.0", "end")

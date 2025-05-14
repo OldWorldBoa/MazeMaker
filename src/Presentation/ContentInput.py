@@ -11,7 +11,7 @@ class ContentInput(Frame):
     def __init__(self, master, question_number, load_data=None):
         super().__init__(master, bg=StyledTkinter.get_medium_color())
 
-        self.isInSolution = IntVar(value=1)
+        self.part_of_answer = IntVar(value=1)
         self.display_open = False
         self.question_number = question_number
 
@@ -32,7 +32,7 @@ class ContentInput(Frame):
         self.question_title_row = Frame(self, bg=StyledTkinter.get_medium_color())
         self.question_in_solution = Checkbutton(self.question_title_row,
                                                 text='Use in solution',
-                                                variable=self.isInSolution,
+                                                variable=self.part_of_answer,
                                                 bg=StyledTkinter.get_medium_color(),
                                                 command=self.update_is_in_solution_indicator)
         self.question_label = Label(self.question_title_row, bg=StyledTkinter.get_medium_color(), text="Question")
@@ -48,7 +48,7 @@ class ContentInput(Frame):
         self.load(load_data)
 
     def update_is_in_solution_indicator(self):
-        if self.isInSolution.get():
+        if self.part_of_answer.get():
             self.header_is_in_solution_indicator.config(text="In Solution")
         else:
             self.header_is_in_solution_indicator.config(text="")
@@ -119,8 +119,13 @@ class ContentInput(Frame):
 
     def load(self, load_data):
         if load_data is not None:
-            self.question.insert(0, load_data['question'])
-            self.answer.insert(0, load_data['answer'])
+            self.part_of_answer.set(load_data['part_of_answer'])
+            self.question.load_content(load_data['question'])
+            self.answer.load_content(load_data['answer'])
+
+            for filler in load_data['fillers']:
+                index = load_data['fillers'].index(filler)
+                self.fillers[index].load_content(filler)
 
     def is_filled(self):
         answer_content = self.answer.get_content()
@@ -141,7 +146,7 @@ class ContentInput(Frame):
 
     def get_as_dict(self):
         return {
-            'part_of_answer': self.isInSolution.get(),
+            'part_of_answer': self.part_of_answer.get(),
             'question': self.question.get_content(),
             'answer': self.answer.get_content(),
             'fillers': [x.get_content() for x in self.fillers]
