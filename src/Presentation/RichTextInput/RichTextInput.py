@@ -17,8 +17,8 @@ class RichTextInput(Frame):
     def display(self, **kwargs):
         super().grid(kwargs)
 
-        self.menu.display()
-        self.input.pack(fill=BOTH)
+        self.menu.display(pady=(0, 4))
+        self.input.pack()
 
     def input_symbol(self, symbol):
         self.input.insert(INSERT, symbol)

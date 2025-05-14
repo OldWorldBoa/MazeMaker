@@ -2,11 +2,12 @@ from tkinter.filedialog import askopenfilename
 
 from src.Presentation.Menu import Menu
 from .SymbolSelector import SymbolSelector
+from ..StyledTkinter import StyledTkinter
 
 
 class RichTextInputMenu(Menu):
     def __init__(self, master, input_symbol_callback, set_image_callback):
-        super().__init__(master, bg="grey75")
+        super().__init__(master, bg=StyledTkinter.get_medium_color())
 
         self.input_symbol_callback = input_symbol_callback
         self.set_image_callback = set_image_callback
@@ -14,7 +15,7 @@ class RichTextInputMenu(Menu):
         self.symbol_selector = None
 
         self.add_button("Symbols", self.click_symbols)
-        self.add_button("Functions", self.click_symbols)
+        # self.add_button("Functions", self.click_symbols)
         self.add_button("Set Image", self.click_set_image)
 
     def click_symbols(self):
@@ -29,4 +30,5 @@ class RichTextInputMenu(Menu):
     def click_set_image(self):
         filename = askopenfilename(title="Select your image",
                                    filetypes=[("Image Files", "*.png"), ("Image Files", "*.jpg")])
-        self.set_image_callback(filename)
+        if filename:
+            self.set_image_callback(filename)

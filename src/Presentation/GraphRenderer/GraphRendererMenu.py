@@ -27,7 +27,7 @@ class GraphRendererMenu(Menu):
         self.add_entry("Answer Width: ", answer_width, self.change_answer_width)
 
     def display(self, **kwargs):
-        super().display(pady=(5, 0), padx=(5, 0))
+        super().display(pady=(5, 5), padx=(5, 0))
 
     def click_draw_maze(self):
         PyBus.Instance().post(SelectToolEvent(DrawMazeTool()))

@@ -40,4 +40,4 @@ class Menu(Frame):
         super().pack(kwargs, expand=False, fill=X)
 
         for element in self.elements:
-            element.pack(side=LEFT, padx=(0, 5), pady=(0, 5))
+            element.pack(side=LEFT, padx=(0, 5))

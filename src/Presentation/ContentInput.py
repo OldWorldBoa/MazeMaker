@@ -39,11 +39,14 @@ class ContentInput(Frame):
         self.question = RichTextInput(self)
 
         self.answer_tabs = TabContainer(self)
-        self.answer = RichTextInput(self.answer_tabs.create_empty_tab("Answer"))
+
+        answer_frame = self.answer_tabs.create_empty_tab("Answer")
+        self.answer = RichTextInput(answer_frame)
 
         self.fillers = []
         for i in range(3):
-            self.fillers.append(RichTextInput(self.answer_tabs.create_empty_tab("Filler " + str(i + 1))))
+            answer_frame = self.answer_tabs.create_empty_tab("Filler " + str(i + 1))
+            self.fillers.append(RichTextInput(answer_frame))
 
         self.load(load_data)
 
@@ -100,7 +103,7 @@ class ContentInput(Frame):
         self.question_title_row.grid(row=1, column=0, sticky="nw", pady=(6, 0))
         self.question_label.pack(side=LEFT, padx=(0, 5), pady=(0, 5))
         self.question_in_solution.pack(side=LEFT, padx=(0, 5), pady=(0, 5))
-        self.question.display(row=2, column=0, sticky="new")
+        self.question.display(row=2, column=0, sticky="new", pady=(4, 4), padx=(4, 4))
         self.answer_tabs.display(row=1, rowspan=2, column=1, pady=(5, 0), sticky=NSEW)
         self.answer.display()
         for filler in self.fillers:

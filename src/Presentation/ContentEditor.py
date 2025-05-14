@@ -39,7 +39,7 @@ class ContentEditor(Frame):
     def display(self, **kwargs):
         super().grid(kwargs, sticky=NSEW)
 
-        self.editor_menu.display()
+        self.editor_menu.display(pady=(0, 5))
         self.inner_content_frame.pack(side=TOP, fill=BOTH, expand=True)
         self.scrollable_canvas.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 10))
         self.content_scrollbar.pack(side=RIGHT, fill=Y)
