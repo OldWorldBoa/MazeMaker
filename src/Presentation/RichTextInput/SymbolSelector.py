@@ -1,19 +1,23 @@
 import math
-from tkinter import Frame, LEFT, OUTSIDE
+from tkinter import Toplevel, Frame, TOP, LEFT, X, font
 
 from ..StyledTkinter import StyledTkinter
 
 
 # This class helps to select unicode symbols
-class SymbolSelector(Frame):
-    def __init__(self, master):
-        super().__init__(master)
+class SymbolSelector(Toplevel):
+    def __init__(self, master, x, y):
+        super().__init__(master, takefocus=True)
 
+        self.overrideredirect(1)
+        self.geometry('%dx%d+%d+%d' % (150, 150, x, y))
+
+        self.category_frame = Frame(self)
         self.category_buttons = [
-            StyledTkinter.get_dark_button(self, text='\u00F7', command=self.select_math_symbols),
-            StyledTkinter.get_dark_button(self, text='\u03C0', command=self.select_greek_symbols),
-            StyledTkinter.get_dark_button(self, text='\u00E9', command=self.select_accent_symbols),
-            StyledTkinter.get_dark_button(self, text='\u0024', command=self.select_business_symbols)
+            StyledTkinter.get_dark_button(self.category_frame, text='\u00F7', command=self.select_math_symbols),
+            StyledTkinter.get_dark_button(self.category_frame, text='\u03C0', command=self.select_greek_symbols),
+            StyledTkinter.get_dark_button(self.category_frame, text='\u00E9', command=self.select_accent_symbols),
+            StyledTkinter.get_dark_button(self.category_frame, text='\u0024', command=self.select_business_symbols)
         ]
 
         self.greek_symbol_frame = Frame(self)
@@ -31,6 +35,8 @@ class SymbolSelector(Frame):
         self.init_math_symbols()
         self.init_accent_symbols()
         self.init_business_symbols()
+
+        self.display()
 
     def init_greek_symbols(self):
         self.greek_symbols = [
@@ -161,41 +167,46 @@ class SymbolSelector(Frame):
             symbol_button = StyledTkinter.get_dark_button(
                 frame,
                 text=symbol,
+                font=font.Font(size=18),
                 command=lambda: self.select_symbol(symbol))
             symbol_button.grid(row=curr_row, column=curr_col, sticky="news")
 
-            if curr_row >= self.width:
+            if curr_col >= self.width:
                 curr_row = curr_row + 1
                 curr_col = 0
             else:
                 curr_col = curr_col + 1
 
     def display(self):
-        self.place(x=0, y=25, height=150, width=150, bordermode=OUTSIDE)
-
+        self.category_frame.pack(side=TOP, fill=X)
         for button in self.category_buttons:
             button.pack(side=LEFT)
 
-        top_offset = 16
-        self.math_symbol_frame.place(y=top_offset)
-        self.greek_symbol_frame.place(y=top_offset)
-        self.accent_symbol_frame.place(y=top_offset)
-        self.business_symbol_frame.place(y=top_offset)
+        self.math_symbol_frame.pack(side=TOP, fill=X, expand=True)
 
     def select_greek_symbols(self):
-        self.greek_symbol_frame.tkraise()
+        self.greek_symbol_frame.pack(side=TOP, fill=X, expand=True)
+        self.math_symbol_frame.pack_forget()
+        self.accent_symbol_frame.pack_forget()
+        self.business_symbol_frame.pack_forget()
 
     def select_math_symbols(self):
-        self.math_symbol_frame.tkraise()
+        self.math_symbol_frame.pack(side=TOP, fill=X, expand=True)
+        self.greek_symbol_frame.pack_forget()
+        self.accent_symbol_frame.pack_forget()
+        self.business_symbol_frame.pack_forget()
 
     def select_accent_symbols(self):
-        self.accent_symbol_frame.tkraise()
+        self.accent_symbol_frame.pack(side=TOP, fill=X, expand=True)
+        self.greek_symbol_frame.pack_forget()
+        self.math_symbol_frame.pack_forget()
+        self.business_symbol_frame.pack_forget()
 
     def select_business_symbols(self):
-        self.business_symbol_frame.tkraise()
+        self.business_symbol_frame.pack(side=TOP, fill=X, expand=True)
+        self.greek_symbol_frame.pack_forget()
+        self.accent_symbol_frame.pack_forget()
+        self.math_symbol_frame.pack_forget()
 
     def select_symbol(self, symbol):
-        pass
-
-    def hide(self):
-        self.place_forget()
+        self.destroy()

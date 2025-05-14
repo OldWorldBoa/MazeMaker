@@ -11,10 +11,8 @@ class RichTextInputMenu(Frame):
 
         self.master = master
         self.buttons = []
+        self.symbol_selector = None
         self.init_buttons()
-        self.symbol_selector = SymbolSelector(self)
-
-        self.symbol_selector_open = False
 
     def init_buttons(self):
         self.add_button("Symbols", lambda: self.click_symbols())
@@ -31,10 +29,9 @@ class RichTextInputMenu(Frame):
             button.pack(side=LEFT, padx=(0, 5), pady=(0, 5))
 
     def click_symbols(self):
-        if self.symbol_selector_open:
-            self.symbol_selector.hide()
-            self.symbol_selector_open = False
-        else:
-            self.symbol_selector_open = True
-            self.symbol_selector.tkraise()
-            self.symbol_selector.display()
+        if self.symbol_selector is not None:
+            self.symbol_selector.destroy()
+
+        x = self.winfo_pointerx()
+        y = self.winfo_pointery()
+        self.symbol_selector = SymbolSelector(self, x, y)
