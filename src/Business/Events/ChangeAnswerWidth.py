@@ -1,3 +1,3 @@
-class ChangeGraphWidth:
+class ChangeAnswerWidth:
     def __init__(self, new_width):
         self.new_width = new_width

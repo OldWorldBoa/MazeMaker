@@ -16,8 +16,10 @@ from src.Business.Events.GraphRendererStateLoaded import GraphRendererStateLoade
 from src.Business.Events.ResetGraphPreview import ResetGraphPreview
 from src.Business.Events.GraphChanged import GraphChanged
 from src.Business.Events.LoadGraphData import LoadGraphData
-from src.Business.Events.ChangeGraphHeight import ChangeGraphHeight
-from src.Business.Events.ChangeGraphWidth import ChangeGraphWidth
+from src.Business.Events.ChangeQuestionHeight import ChangeQuestionHeight
+from src.Business.Events.ChangeQuestionWidth import ChangeQuestionWidth
+from src.Business.Events.ChangeAnswerLength import ChangeAnswerLength
+from src.Business.Events.ChangeAnswerWidth import ChangeAnswerWidth
 from src.Business.Decorators.ClampNegativeArgs import clamp_negative_args
 
 
@@ -26,9 +28,10 @@ class GraphRenderer(Frame):
         super().__init__(master, borderwidth=1, relief=SUNKEN)
         PyBus.Instance().register(self, self.__class__.__name__)
 
-        self.height = 100
-        self.width = 100
-        self.padding = 50
+        self.question_height = 100
+        self.question_width = 100
+        self.answer_length = 50
+        self.answer_width = 50
         self.rows = 0
         self.columns = 0
         self.preview_rows = 0
@@ -37,7 +40,10 @@ class GraphRenderer(Frame):
         self.synchronizer = Lock()
         self.current_work = None
         self.canvas = Canvas(self, bg=StyledTkinter.get_light_color())
-        self.menu = GraphRendererMenu(self, self.height, self.width)
+        self.menu = GraphRendererMenu(self, self.question_height,
+                                      self.question_width,
+                                      self.answer_length,
+                                      self.answer_width)
         self.graph = None
         self.content = None
         self.drawn_edges = []
@@ -49,9 +55,9 @@ class GraphRenderer(Frame):
 
     @clamp_negative_args
     def update_graph_component_size(self, height, width):
-        if self.height != height or self.width != width:
-            self.height = height
-            self.width = width
+        if self.question_height != height or self.question_width != width:
+            self.question_height = height
+            self.question_width = width
             self.draw()
 
     @clamp_negative_args
@@ -96,14 +102,16 @@ class GraphRenderer(Frame):
 
     def draw_vertex_with_edges(self, vertex):
         data = self.graph.get_vertex_data(vertex)
-        x = self.padding + data.x * self.width + data.x * self.padding
-        y = self.padding + data.y * self.height + data.y * self.padding
+        x = self.answer_length + data.x * self.question_width + data.x * self.answer_length
+        y = self.answer_length + data.y * self.question_height + data.y * self.answer_length
         border_color = self.get_color_for_graph_data_type(data.type)
         fill_color = self.get_fill_color_for_graph_data_type(data.type)
 
-        self.canvas.create_rectangle(x, y, x + self.width, y + self.height, outline=border_color, fill=fill_color)
+        self.canvas.create_rectangle(x, y, x + self.question_width, y + self.question_height, outline=border_color,
+                                     fill=fill_color)
         self.canvas.create_window((x + 1, y + 1), anchor="nw",
-                                  window=self.make_content_widget(data.content, self.height, self.width))
+                                  window=self.make_content_widget(data.content, self.question_height,
+                                                                  self.question_width))
 
         self.draw_edges(vertex)
 
@@ -117,13 +125,33 @@ class GraphRenderer(Frame):
     def draw_edge(self, vertex, next_vertex):
         x = self.get_edge_x(vertex, next_vertex)
         y = self.get_edge_y(vertex, next_vertex)
+        x_size = self.get_x_size(vertex, next_vertex)
+        y_size = self.get_y_size(vertex, next_vertex)
         edge_data = self.graph.get_edge_data(vertex, next_vertex)
         border_color = self.get_color_for_graph_data_type(edge_data.type)
         fill_color = self.get_fill_color_for_graph_data_type(edge_data.type)
 
-        self.canvas.create_rectangle(x, y, x + self.padding, y + self.padding, outline=border_color, fill=fill_color)
-        self.canvas.create_window((x + self.padding/2 + 1, y + 1), anchor="n",
-                                  window=self.make_content_widget(edge_data.content, self.padding, self.padding))
+        self.canvas.create_rectangle(x, y, x + x_size, y + y_size, outline=border_color, fill=fill_color)
+        self.canvas.create_window((x + x_size / 2 + 1, y + 1), anchor="n",
+                                  window=self.make_content_widget(edge_data.content, y_size, x_size))
+
+    def get_x_size(self, vertex, next_vertex):
+        vertex_data = self.graph.get_vertex_data(vertex)
+        next_vertex_data = self.graph.get_vertex_data(next_vertex)
+
+        if next_vertex_data.x - vertex_data.x == 0:
+            return self.answer_width
+        else:
+            return self.answer_length
+
+    def get_y_size(self, vertex, next_vertex):
+        vertex_data = self.graph.get_vertex_data(vertex)
+        next_vertex_data = self.graph.get_vertex_data(next_vertex)
+
+        if next_vertex_data.y - vertex_data.y == 0:
+            return self.answer_width
+        else:
+            return self.answer_length
 
     def make_content_widget(self, content, height, width):
         if content:
@@ -157,24 +185,29 @@ class GraphRenderer(Frame):
     def get_edge_x(self, vertex, next_vertex):
         vertex_data = self.graph.get_vertex_data(vertex)
         next_vertex_data = self.graph.get_vertex_data(next_vertex)
-        center_x = vertex_data.x * self.width + (vertex_data.x + 1) * self.padding + self.width / 2
+        center_x = vertex_data.x * self.question_width + \
+                   (vertex_data.x + 1) * self.answer_length + self.question_width / 2
 
-        return center_x + self.get_direction_modifier(next_vertex_data.x - vertex_data.x, self.width)
+        return center_x + self.get_direction_modifier(next_vertex_data.x - vertex_data.x, self.question_width)
 
     def get_edge_y(self, vertex, next_vertex):
         vertex_data = self.graph.get_vertex_data(vertex)
         next_vertex_data = self.graph.get_vertex_data(next_vertex)
-        center_y = vertex_data.y * self.height + (vertex_data.y + 1) * self.padding + self.height / 2
+        center_y = vertex_data.y * self.question_height + \
+                   (vertex_data.y + 1) * self.answer_length + self.question_height / 2
 
-        return center_y + self.get_direction_modifier(next_vertex_data.y - vertex_data.y, self.height)
+        return center_y + self.get_direction_modifier(next_vertex_data.y - vertex_data.y, self.question_height)
 
+    # direction > 0: get distance to edge of box
+    # direction == 0: get half of the width to move over
+    # direction < 0: get the distance to the other edge of the box
     def get_direction_modifier(self, direction, scale):
         if direction > 0:
             return scale / 2
         elif direction == 0:
-            return -self.padding / 2
-        else:  # direction < 0
-            return -scale / 2 - self.padding
+            return -self.answer_width / 2
+        else:
+            return -scale / 2 - self.answer_length
 
     def get_state_to_save(self):
         return GraphRendererState(self.graph, self.rows, self.columns)
@@ -272,24 +305,34 @@ class GraphRenderer(Frame):
 
         self.synchronizer.release()
 
-    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ChangeGraphWidth)
-    def change_graph_width(self, event):
-        self.width = int(event.new_width)
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ChangeQuestionWidth)
+    def change_question_width(self, event):
+        self.question_width = int(event.new_width)
         self.draw()
 
-    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ChangeGraphHeight)
-    def change_graph_width(self, event):
-        self.height = int(event.new_height)
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ChangeQuestionHeight)
+    def change_question_width(self, event):
+        self.question_height = int(event.new_height)
+        self.draw()
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ChangeAnswerWidth)
+    def change_answer_width(self, event):
+        self.answer_width = int(event.new_width)
+        self.draw()
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ChangeAnswerLength)
+    def change_answer_length(self, event):
+        self.answer_length = int(event.new_length)
         self.draw()
 
     def graph_changed(self):
         PyBus.Instance().post(GraphChanged(self.rows, self.columns))
 
     def get_rows_from(self, y):
-        return math.ceil((y - self.padding) / (self.width + self.padding))
+        return math.ceil((y - self.answer_length) / (self.question_width + self.answer_length))
 
     def get_columns_from(self, x):
-        return math.ceil((x - self.padding) / (self.height + self.padding))
+        return math.ceil((x - self.answer_length) / (self.question_height + self.answer_length))
 
     def kill_current_work(self):
         if self.current_work is not None:

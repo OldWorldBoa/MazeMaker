@@ -46,7 +46,7 @@ class ContentEditor(Frame):
         self.scrollable_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     def change_width(self, event):
-        self.scrollable_canvas.itemconfig(self.canvas_frame, width=event.width)
+        self.scrollable_canvas.itemconfig(self.canvas_frame, width=event.question_width)
 
     def on_frame_configure(self, event):
         # Reset the scroll region to encompass the inner frame
