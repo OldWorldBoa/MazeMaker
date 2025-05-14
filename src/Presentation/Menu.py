@@ -8,6 +8,7 @@ from ..Business.Tools.SaveTool import SaveTool
 from ..Business.Tools.LoadTool import LoadTool
 from ..Business.Tools.ExportTool import ExportTool
 from ..Business.Tools.EditContentTool import EditContentTool
+from ..Business.Tools.PrintTool import PrintTool
 
 
 # The click button command handlers require one parameter,
@@ -27,6 +28,7 @@ class Menu(Frame):
         self.add_button("Export", self.click_export)
         self.add_button("Draw Maze", self.click_draw_maze)
         self.add_button("Edit Content", self.click_edit_content)
+        self.add_button("Print", self.click_print)
 
     def add_button(self, text, command):
         self.buttons.append(StyledTkinter.get_styled_button(self, text=text, command=command))
@@ -51,3 +53,6 @@ class Menu(Frame):
 
     def click_edit_content(click_event):
         PyBus.Instance().post(SelectToolEvent(EditContentTool()))
+
+    def click_print(click_event):
+        PyBus.Instance().post(SelectToolEvent(PrintTool()))

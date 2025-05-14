@@ -1,7 +1,7 @@
 import pickle
 import io
 
-from PIL import Image
+from PIL import Image, EpsImagePlugin
 from tkinter import Frame, BOTH
 from pyeventbus3.pyeventbus3 import *
 
@@ -13,6 +13,8 @@ from ..Events.ExportAsImage import ExportAsImage
 from .KeyPressHandler import KeyPressHandler
 from .MouseHandler import MouseHandler
 from ...Model.ProgramState import ProgramState
+from ..Events.PrintCanvas import PrintCanvas
+from ...Presentation.PrintDialogue import PrintDialogue
 
 
 class AppMediator(Frame):
@@ -54,5 +56,24 @@ class AppMediator(Frame):
     def export_as_image(self, event):
         canvas = self.content_frame.graph_renderer.canvas
         ps = canvas.postscript(colormode='color')
+
+        self.set_ghost_script_binary()
         im = Image.open(io.BytesIO(ps.encode('utf-8')))
         im.save(event.file + '.jpg')
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=PrintCanvas)
+    def sync_print_canvas(self, event):
+        canvas = self.content_frame.graph_renderer.canvas
+        ps = canvas.postscript(colormode='color')
+
+        self.set_ghost_script_binary()
+        im = Image.open(io.BytesIO(ps.encode('utf-8')))
+        im.save('C:\\temp\\mm_tmp.jpg')
+
+        print_dialogue = PrintDialogue()
+        print_dialogue.display()
+
+    def set_ghost_script_binary(self):
+        root_dir = os.path.dirname(os.path.abspath(__file__))
+        binary_path = os.path.join(root_dir, "..\\..\\..\\lib\\gs9.54.0\\bin\\gswin64c")
+        EpsImagePlugin.gs_windows_binary = binary_path

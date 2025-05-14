@@ -16,4 +16,3 @@ class SaveTool(Tool):
 
             if file != '':
                 PyBus.Instance().post(SaveToFile(file))
-
