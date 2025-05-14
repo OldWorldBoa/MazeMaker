@@ -63,6 +63,7 @@ class GraphRenderer(Frame):
     @clamp_negative_args
     def update_size(self, rows, columns):
         if self.rows != rows or self.columns != columns:
+            self.content = None
             self.rows = rows
             self.columns = columns
             self.refresh_graph()

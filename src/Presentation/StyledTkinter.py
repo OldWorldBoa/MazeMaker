@@ -1,4 +1,5 @@
-from tkinter import Button, FLAT
+import sys
+from tkinter import Button, FLAT, ttk
 
 
 class StyledTkinter:
@@ -11,7 +12,8 @@ class StyledTkinter:
                       bg=StyledTkinter.get_dark_color(),
                       fg=StyledTkinter.get_light_color(),
                       activebackground="gray15",
-                      activeforeground="gray63")
+                      activeforeground="gray63",
+                      cursor="hand2")
 
     @staticmethod
     def get_primary_color():

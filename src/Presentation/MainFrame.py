@@ -23,7 +23,7 @@ class MainFrame(Frame):
         self.hide_content_editor()
         self.rowconfigure(0, weight=1)
         self.columnconfigure(0, weight=1)
-        self.graph_renderer.display(row=0, column=0, sticky="nesw")
+        self.graph_renderer.display(row=0, column=0, sticky="news")
 
     def toggle_content_editor(self):
         if not self.content_editor_shown:

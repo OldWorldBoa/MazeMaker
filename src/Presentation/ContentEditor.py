@@ -1,14 +1,15 @@
 from threading import Lock
-from tkinter import Frame, Canvas, Scrollbar, RIGHT, LEFT, TOP, X, Y, BOTH, Text, CENTER, VERTICAL, Label
+from tkinter import Frame, Canvas, Scrollbar, RIGHT, LEFT, TOP, X, Y, BOTH, VERTICAL
 from pyeventbus3.pyeventbus3 import *
 
 from ..Business.Events.GraphChanged import GraphChanged
 from ..Business.Events.LoadGraphData import LoadGraphData
 from ..Business.Events.ContentLoaded import ContentLoaded
 from ..Business.Events.CloseOtherInputs import CloseOtherInputs
-from ..Business.Builders.GraphBuilder import GraphBuilder
+from ..Business.Events.DisplayMessage import DisplayMessage
 from .ContentInput import ContentInput
 from .StyledTkinter import StyledTkinter
+from ..Model.MessageSeverity import MessageSeverity
 
 
 class ContentEditor(Frame):
@@ -70,8 +71,12 @@ class ContentEditor(Frame):
             self.inputs[i].display(row=i, pady=(0, 5))
 
     def generate_maze(self):
-        content = [x.get_as_dict() for x in self.inputs if x.is_filled()]
-        PyBus.Instance().post(LoadGraphData(content))
+        if False not in [x.is_filled() for x in self.inputs]:
+            content = [x.get_as_dict() for x in self.inputs]
+            PyBus.Instance().post(LoadGraphData(content))
+        else:
+            PyBus.Instance().post(
+                DisplayMessage("Please fill in all questions, answers and fillers", MessageSeverity.WARNING))
 
     def update_size(self, rows, columns):
         max_path_length = (rows * columns) - 1  # -1 for Finish square

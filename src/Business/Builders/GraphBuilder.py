@@ -78,7 +78,10 @@ class GraphBuilder:
 
     def add_data(self, graph):
         if self.content is not None:
-            num_data = len(self.content)
+            solution_data = [x for x in self.content if x['part_of_answer'] == 1]
+            filler_data = [x for x in self.content if x['part_of_answer'] == 0]
+
+            num_data = len(solution_data)
 
             path = graph.get_random_path(
                 "0,0",
@@ -89,8 +92,29 @@ class GraphBuilder:
                 for i in range(0, num_data):
                     vertex = path[i]
                     next_vertex = path[i + 1]
+                    content = self.content[i]
 
-                    graph.get_vertex_data(vertex).content = self.content[i]['question']
-                    graph.get_edge_data(vertex, next_vertex).content = self.content[i]['answer']
+                    graph.get_edge_data(vertex, next_vertex).content = content['answer']
+                    self.fill_vertex(graph, vertex, content)
 
                 graph.get_vertex_data(path[num_data]).content = {"text": "Finish", "placed_images": []}
+
+                other_vertices = [x for x in graph.vertices if x not in path]
+                if other_vertices:
+                    for i in range(0, len(other_vertices)):
+                        self.fill_vertex(graph, other_vertices[i], filler_data[i])
+
+    def fill_vertex(self, graph, vertex, content):
+        graph.get_vertex_data(vertex).content = content['question']
+
+        neighbours = graph.vertices[vertex]
+        if not neighbours:
+            return
+
+        answers = content['fillers']
+        answers.append(content['answer'])
+
+        for next_vertex in neighbours:
+            edge_data = graph.get_edge_data(vertex, next_vertex)
+            if not edge_data.content:
+                edge_data.content = answers[neighbours.index(next_vertex)]
