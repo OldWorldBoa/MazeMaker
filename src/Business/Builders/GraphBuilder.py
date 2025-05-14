@@ -92,7 +92,7 @@ class GraphBuilder:
                 for i in range(0, num_data):
                     vertex = path[i]
                     next_vertex = path[i + 1]
-                    content = self.solution_data[i]
+                    content = solution_data[i]
 
                     graph.get_edge_data(vertex, next_vertex).content = content['answer']
                     graph.get_edge_data(vertex, next_vertex).part_of_answer = True

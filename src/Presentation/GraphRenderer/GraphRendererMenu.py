@@ -5,9 +5,10 @@ from ...Business.Events.ChangeQuestionWidth import ChangeQuestionWidth
 from ...Business.Events.ChangeQuestionHeight import ChangeQuestionHeight
 from ...Business.Events.ChangeAnswerLength import ChangeAnswerLength
 from ...Business.Events.ChangeAnswerWidth import ChangeAnswerWidth
+from ...Business.Events.ToggleSolutionView import ToggleSolutionView
 
 from pyeventbus3.pyeventbus3 import *
-from tkinter import Label, StringVar, LEFT
+from tkinter import DISABLED, NORMAL, Tk
 
 
 # The click button command handlers require one parameter,
@@ -18,14 +19,33 @@ class GraphRendererMenu(Menu):
         super().__init__(master)
 
         self.master = master
-        self.add_button("Draw Maze", self.click_draw_maze)
+        self.add_button("Draw Maze", lambda: self.click_draw_maze())
+        self.add_debounced_button("Show Solution", lambda: self.click_show_solution())
         self.add_entry("Question Height: ", question_height, self.change_question_height)
         self.add_entry("Question Width: ", question_width, self.change_question_width)
         self.add_entry("Answer Length: ", answer_length, self.change_answer_length)
         self.add_entry("Answer Width: ", answer_width, self.change_answer_width)
 
-    def click_draw_maze(click_event):
+    def display(self, **kwargs):
+        super().display(pady=(5, 0), padx=(5, 0))
+
+    def click_draw_maze(self):
         PyBus.Instance().post(SelectToolEvent(DrawMazeTool()))
+
+    def click_show_solution(self):
+        show_solution_button = self.elements[1]
+        show_solution_button['state'] = DISABLED
+        Tk.update(self.master)
+
+        curr_text = show_solution_button['text']
+        if curr_text == "Show Solution":
+            show_solution_button['text'] = "Hide Solution"
+        else:
+            show_solution_button['text'] = "Show Solution"
+
+        PyBus.Instance().post(ToggleSolutionView())
+        time.sleep(0.2)
+        show_solution_button['state'] = NORMAL
 
     def change_question_height(self, new_height):
         PyBus.Instance().post(ChangeQuestionHeight(new_height))

@@ -1,41 +1,45 @@
 from threading import Lock
-from tkinter import Frame, Canvas, Scrollbar, RIGHT, LEFT, TOP, X, Y, BOTH, VERTICAL
+from tkinter import Frame, Canvas, Scrollbar, RIGHT, LEFT, TOP, Y, BOTH, VERTICAL, NSEW, RIDGE, NW, NORMAL, DISABLED, Tk
 from pyeventbus3.pyeventbus3 import *
 
+from .StyledTkinter import StyledTkinter
 from ..Business.Events.GraphChanged import GraphChanged
 from ..Business.Events.LoadGraphData import LoadGraphData
 from ..Business.Events.ContentLoaded import ContentLoaded
 from ..Business.Events.CloseOtherInputs import CloseOtherInputs
 from ..Business.Events.DisplayMessage import DisplayMessage
 from .ContentInput import ContentInput
-from .StyledTkinter import StyledTkinter
 from ..Model.MessageSeverity import MessageSeverity
+from .Menu import Menu
 
 
 class ContentEditor(Frame):
     def __init__(self, master):
-        super().__init__(master, bg="gray75", pady=10, padx=10)
+        super().__init__(master, bg=StyledTkinter.get_medium_color(), pady=10, padx=10)
 
         PyBus.Instance().register(self, self.__class__.__name__)
 
         self.master = master
-        self.inner_content_frame = Frame(self, bg="gray75")
-        self.scrollable_canvas = Canvas(self.inner_content_frame, bd=0, highlightthickness=0, relief='ridge',
-                                        bg="gray75")
-        self.content_frame = Frame(self.inner_content_frame, bg="gray75")
-        self.canvas_frame = self.scrollable_canvas.create_window((0, 0), anchor="nw", window=self.content_frame)
+        self.inner_content_frame = Frame(self, bg=StyledTkinter.get_medium_color())
+        self.scrollable_canvas = Canvas(self.inner_content_frame, bd=0, highlightthickness=0, relief=RIDGE,
+                                        bg=StyledTkinter.get_medium_color())
+        self.content_frame = Frame(self.inner_content_frame, bg=StyledTkinter.get_medium_color())
+        self.canvas_frame = self.scrollable_canvas.create_window((0, 0), anchor=NW, window=self.content_frame)
         self.content_scrollbar = Scrollbar(self.inner_content_frame, orient=VERTICAL,
-                                           command=self.scrollable_canvas.yview, bg="gray75")
+                                           command=self.scrollable_canvas.yview, bg=StyledTkinter.get_medium_color())
         self.scrollable_canvas.bind_all("<MouseWheel>", self.on_mousewheel)
         self.scrollable_canvas.config(yscrollcommand=self.content_scrollbar.set)
-        self.generate_button = StyledTkinter.get_dark_button(self, text="Generate Maze", command=self.generate_maze)
+        self.editor_menu = Menu(self, bg=StyledTkinter.get_medium_color())
+        self.editor_menu.add_debounced_button("Generate Maze", self.generate_maze)
+        self.editor_menu.add_button("Fill with test data", self.fill_with_test_data)
+
         self.inputs = []
         self.synchronizer = Lock()
 
     def display(self, **kwargs):
-        super().grid(kwargs, sticky="nesw")
+        super().grid(kwargs, sticky=NSEW)
 
-        self.generate_button.pack(side=TOP, fill=X, pady=(0, 2))
+        self.editor_menu.display()
         self.inner_content_frame.pack(side=TOP, fill=BOTH, expand=True)
         self.scrollable_canvas.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 10))
         self.content_scrollbar.pack(side=RIGHT, fill=Y)
@@ -71,12 +75,23 @@ class ContentEditor(Frame):
             self.inputs[i].display(row=i, pady=(0, 5))
 
     def generate_maze(self):
+        generate_maze_button = self.editor_menu.elements[0]
+        generate_maze_button['state'] = DISABLED
+        Tk.update(self.master)
+
         if False not in [x.is_filled() for x in self.inputs]:
             content = [x.get_as_dict() for x in self.inputs]
             PyBus.Instance().post(LoadGraphData(content))
         else:
             PyBus.Instance().post(
                 DisplayMessage("Please fill in all questions, answers and fillers", MessageSeverity.WARNING))
+
+        time.sleep(0.35)
+        generate_maze_button['state'] = NORMAL
+
+    def fill_with_test_data(self):
+        for curr_input in self.inputs:
+            curr_input.fill_with_test_data(self.inputs.index(curr_input))
 
     def update_size(self, rows, columns):
         max_path_length = (rows * columns) - 1  # -1 for Finish square

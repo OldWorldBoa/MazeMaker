@@ -1,9 +1,8 @@
 import pickle
-import io
-import cv2
 
-from PIL import Image, EpsImagePlugin
+from PIL import EpsImagePlugin, ImageGrab
 from tkinter import Frame, BOTH
+
 from pyeventbus3.pyeventbus3 import *
 
 from .Footer import Footer
@@ -17,6 +16,7 @@ from src.Business.Events.PrintCanvas import PrintCanvas
 from src.Business.Infrastructure.KeyPressHandler import KeyPressHandler
 from src.Business.Infrastructure.MouseHandler import MouseHandler
 from src.Model.ProgramState import ProgramState
+from ..Model.Constants import Constants
 
 
 class AppMediator(Frame):
@@ -35,6 +35,8 @@ class AppMediator(Frame):
         self.tickNum = 0
         self.key_press_handler = KeyPressHandler(master)
         self.mouse_handler = MouseHandler(self.content_frame.graph_renderer.canvas)
+
+        self.set_ghost_script_binary()
 
     def display(self):
         super().pack(expand=True, fill=BOTH)
@@ -63,44 +65,36 @@ class AppMediator(Frame):
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=PrintCanvas)
     def print_canvas(self, event):
-        self.export_to_file('C:\\temp\\mm_tmp.png')
+        self.content_frame.graph_renderer.canvas.configure(bg="white")
+        show_solution = self.content_frame.graph_renderer.show_solution
+        if show_solution:
+            self.content_frame.graph_renderer.show_solution = False
+            self.content_frame.graph_renderer.draw()
 
+        self.export_to_file(Constants.temp_png_file)
+
+        self.content_frame.graph_renderer.show_solution = True
+        self.content_frame.graph_renderer.draw()
+
+        self.export_to_file(Constants.temp_png_soln_file)
+
+        if not show_solution:
+            self.content_frame.graph_renderer.show_solution = False
+            self.content_frame.graph_renderer.draw()
+
+        self.content_frame.graph_renderer.canvas.configure(bg=StyledTkinter.get_light_color())
         print_dialogue = PrintDialogue()
         print_dialogue.display()
 
     def export_to_file(self, file_name):
-        ps = self.content_frame.graph_renderer.canvas.postscript()
-        self.set_ghost_script_binary()
-        img = Image.open(io.BytesIO(ps.encode('utf-8')))
-        img.save(file_name)
-        self.trim(file_name)
-
-    # https://www.semicolonworld.com/question/60108/how-to-remove-extra-whitespace-from-image-in-opencv
-    @staticmethod
-    def trim(file_name):
-        # Load image, grayscale, Gaussian blur, Otsu's threshold
-        image = cv2.imread(file_name)
-        original = image.copy()
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(gray, (25, 25), 0)
-        thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-
-        # Perform morph operations, first open to remove noise, then close to combine
-        noise_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-        opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, noise_kernel, iterations=2)
-        close_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (7, 7))
-        close = cv2.morphologyEx(opening, cv2.MORPH_CLOSE, close_kernel, iterations=3)
-
-        # Find enclosing bounding-box and crop ROI
-        coordinates = cv2.findNonZero(close)
-        x, y, w, h = cv2.boundingRect(coordinates)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (36, 255, 12), 2)
-        crop = original[y:y + h, x:x + w]
-
-        cv2.imwrite(file_name, crop)
+        x = self.content_frame.graph_renderer.winfo_rootx() + self.content_frame.graph_renderer.canvas.winfo_x()
+        y = self.content_frame.graph_renderer.winfo_rooty() + self.content_frame.graph_renderer.canvas.winfo_y()
+        xx = x + self.content_frame.graph_renderer.get_used_width()
+        yy = y + self.content_frame.graph_renderer.get_used_height()
+        ImageGrab.grab(bbox=(x, y, xx, yy)).save(file_name)
 
     @staticmethod
     def set_ghost_script_binary():
         root_dir = os.path.dirname(os.path.abspath(__file__))
-        binary_path = os.path.join(root_dir, "..\\..\\..\\lib\\gs9.54.0\\bin\\gswin64c")
+        binary_path = os.path.join(root_dir, "..\\..\\lib\\gs9.54.0\\bin\\gswin64c")
         EpsImagePlugin.gs_windows_binary = binary_path

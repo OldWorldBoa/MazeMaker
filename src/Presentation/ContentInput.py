@@ -3,7 +3,7 @@ from .TabContainer import TabContainer
 from ..Business.Events.CloseOtherInputs import CloseOtherInputs
 from src.Presentation.RichTextInput.RichTextInput import RichTextInput
 
-from tkinter import Frame, Label, StringVar, NSEW, LEFT, Checkbutton, IntVar
+from tkinter import Frame, Label, StringVar, NSEW, LEFT, Checkbutton, IntVar, END, INSERT
 from pyeventbus3.pyeventbus3 import *
 
 
@@ -72,8 +72,23 @@ class ContentInput(Frame):
         self.header.grid(row=0, column=0, pady=(0, 2), columnspan=2, sticky=NSEW)
         self.header_border.grid(row=0, column=0, columnspan=2, sticky=NSEW)
         self.toggle_display.grid(row=0, column=0, sticky="nw")
-        self.header_title.grid(row=0, column=1, sticky="news")
+        self.header_title.grid(row=0, column=1, sticky=NSEW)
         self.header_is_in_solution_indicator.grid(row=0, column=2, sticky="nw")
+
+    def fill_with_test_data(self, index):
+        ContentInput.update_input(self.question.input, "Question" + str(index + 1))
+        ContentInput.update_input(self.answer.input, "Answer" + str(index + 1))
+
+        for filler in self.fillers:
+            filler_index = self.fillers.index(filler)
+            ContentInput.update_input(filler.input, "Q" + str(index + 1) + " Filler" + str(filler_index + 1))
+
+    @staticmethod
+    def update_input(input_to_update, text):
+        curr_text = input_to_update.get("1.0", END)
+
+        if curr_text.strip() == "":
+            input_to_update.insert(INSERT, text)
 
     def toggle_input_display(self):
         if self.display_open:

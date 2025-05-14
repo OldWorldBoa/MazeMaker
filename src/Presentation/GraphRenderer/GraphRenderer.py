@@ -1,7 +1,7 @@
 import math
 
 from threading import Lock
-from tkinter import Frame, Canvas, BOTH, SUNKEN, Text, font, DISABLED, FLAT, X
+from tkinter import Frame, Canvas, BOTH, SUNKEN, Text, font, DISABLED, FLAT, X, Label
 from pyeventbus3.pyeventbus3 import *
 
 from src.Presentation.StyledTkinter import StyledTkinter
@@ -20,6 +20,7 @@ from src.Business.Events.ChangeQuestionHeight import ChangeQuestionHeight
 from src.Business.Events.ChangeQuestionWidth import ChangeQuestionWidth
 from src.Business.Events.ChangeAnswerLength import ChangeAnswerLength
 from src.Business.Events.ChangeAnswerWidth import ChangeAnswerWidth
+from src.Business.Events.ToggleSolutionView import ToggleSolutionView
 from src.Business.Decorators.ClampNegativeArgs import clamp_negative_args
 
 
@@ -28,10 +29,11 @@ class GraphRenderer(Frame):
         super().__init__(master, borderwidth=1, relief=SUNKEN)
         PyBus.Instance().register(self, self.__class__.__name__)
 
-        self.question_height = 100
-        self.question_width = 100
-        self.answer_length = 50
-        self.answer_width = 50
+        self.margin = 50
+        self.question_height = 150
+        self.question_width = 150
+        self.answer_length = 90
+        self.answer_width = 90
         self.rows = 0
         self.columns = 0
         self.preview_rows = 0
@@ -47,11 +49,18 @@ class GraphRenderer(Frame):
         self.graph = None
         self.content = None
         self.drawn_edges = []
+        self.show_solution = False
 
     def display(self, **kwargs):
         super().grid(kwargs)
         self.menu.display()
         self.canvas.pack(fill=BOTH, expand=True)
+
+    def get_used_height(self):
+        return self.margin * 2 + self.question_height * self.rows + self.answer_length * (self.rows - 1)
+
+    def get_used_width(self):
+        return self.margin * 2 + self.question_width * self.columns + self.answer_length * (self.columns - 1)
 
     @clamp_negative_args
     def update_graph_component_size(self, height, width):
@@ -93,6 +102,7 @@ class GraphRenderer(Frame):
 
     def draw(self):
         self.canvas.delete("all")
+        self.canvas.children.clear()
         self.drawn_edges.clear()
 
         for vertex in self.graph.vertices.keys():
@@ -103,16 +113,15 @@ class GraphRenderer(Frame):
 
     def draw_vertex_with_edges(self, vertex):
         data = self.graph.get_vertex_data(vertex)
-        x = self.answer_length + data.x * self.question_width + data.x * self.answer_length
-        y = self.answer_length + data.y * self.question_height + data.y * self.answer_length
-        border_color = self.get_color_for_graph_data_type(data.type)
-        fill_color = self.get_fill_color_for_graph_data_type(data.type)
+        x = self.margin + data.x * self.question_width + data.x * self.answer_length
+        y = self.margin + data.y * self.question_height + data.y * self.answer_length
+        border_color = self.get_border_color_for_node(data)
+        fill_color = self.get_fill_color_for_node(data)
 
-        self.canvas.create_rectangle(x, y, x + self.question_width, y + self.question_height, outline=border_color,
-                                     fill=fill_color)
+        self.canvas.create_rectangle(x, y, x + self.question_width, y + self.question_height,
+                                     outline=border_color, fill=fill_color)
         self.canvas.create_window((x + 1, y + 1), anchor="nw",
-                                  window=self.make_content_widget(data.content, self.question_height,
-                                                                  self.question_width))
+                                  window=self.make_content_widget(data, self.question_height, self.question_width))
 
         self.draw_edges(vertex)
 
@@ -129,12 +138,12 @@ class GraphRenderer(Frame):
         x_size = self.get_x_size(vertex, next_vertex)
         y_size = self.get_y_size(vertex, next_vertex)
         edge_data = self.graph.get_edge_data(vertex, next_vertex)
-        border_color = self.get_color_for_graph_data_type(edge_data.type)
-        fill_color = self.get_fill_color_for_graph_data_type(edge_data.type)
+        border_color = self.get_border_color_for_node(edge_data)
+        fill_color = self.get_fill_color_for_node(edge_data)
 
         self.canvas.create_rectangle(x, y, x + x_size, y + y_size, outline=border_color, fill=fill_color)
         self.canvas.create_window((x + x_size / 2 + 1, y + 1), anchor="n",
-                                  window=self.make_content_widget(edge_data.content, y_size, x_size))
+                                  window=self.make_content_widget(edge_data, y_size, x_size))
 
     def get_x_size(self, vertex, next_vertex):
         vertex_data = self.graph.get_vertex_data(vertex)
@@ -154,40 +163,35 @@ class GraphRenderer(Frame):
         else:
             return self.answer_length
 
-    def make_content_widget(self, content, height, width):
-        if content:
-            frame = Frame(self, height=height - 2, width=width - 2)
-            frame.grid_columnconfigure(0, weight=1)
-            frame.grid_rowconfigure(0, weight=1)
+    def make_content_widget(self, data, height, width):
+        if data.content:
+            frame = Frame(self.canvas, height=height-2, width=width-2, bg=self.get_fill_color_for_node(data))
             frame.pack()
             frame.pack_propagate(False)
 
-            self.make_text_widget(content, frame)
+            self.make_text_widget(data, frame)
 
             return frame
 
-    @staticmethod
-    def make_text_widget(content, frame):
-        text = Text(frame, font=font.Font(size=16), relief=FLAT, width=1, height=1)
-        text.insert("1.0", content["text"])
+    def make_text_widget(self, data, frame):
+        text = Text(frame, font=font.Font(size=16), relief=FLAT, bg=self.get_fill_color_for_node(data))
+        text.insert("1.0", data.content["text"])
 
-        images = content["placed_images"]
+        images = data.content["placed_images"]
         if images:
             for image in images:
                 text.image_create(image["index"], image=image["image"])
 
         text.tag_configure("center", justify='center')
         text.tag_add("center", "1.0", "end")
-        text.pack(fill=BOTH, expand=True)
-        text.config(state=DISABLED)
 
-        return text
+        text.pack()
 
     def get_edge_x(self, vertex, next_vertex):
         vertex_data = self.graph.get_vertex_data(vertex)
         next_vertex_data = self.graph.get_vertex_data(next_vertex)
         center_x = vertex_data.x * self.question_width + \
-                   (vertex_data.x + 1) * self.answer_length + self.question_width / 2
+                   vertex_data.x * self.answer_length + self.question_width / 2 + self.margin
 
         return center_x + self.get_direction_modifier(next_vertex_data.x - vertex_data.x, self.question_width)
 
@@ -195,7 +199,7 @@ class GraphRenderer(Frame):
         vertex_data = self.graph.get_vertex_data(vertex)
         next_vertex_data = self.graph.get_vertex_data(next_vertex)
         center_y = vertex_data.y * self.question_height + \
-                   (vertex_data.y + 1) * self.answer_length + self.question_height / 2
+                   vertex_data.y * self.answer_length + self.question_height / 2 + self.margin
 
         return center_y + self.get_direction_modifier(next_vertex_data.y - vertex_data.y, self.question_height)
 
@@ -220,24 +224,28 @@ class GraphRenderer(Frame):
         self.columns = state.columns
         self.preview_columns = state.columns
 
-    @staticmethod
-    def get_color_for_graph_data_type(curr_type):
-        if curr_type == GraphDataType.EXISTS:
+    def get_border_color_for_node(self, data):
+        if self.show_solution and data.part_of_answer:
+            return "green"
+
+        if data.type == GraphDataType.EXISTS:
             return "black"
-        elif curr_type == GraphDataType.REMOVE:
+        elif data.type == GraphDataType.REMOVE:
             return "red"
-        elif curr_type == GraphDataType.ADD:
+        elif data.type == GraphDataType.ADD:
             return "green"
         else:
             return ""
 
-    @staticmethod
-    def get_fill_color_for_graph_data_type(curr_type):
-        if curr_type == GraphDataType.EXISTS:
+    def get_fill_color_for_node(self, data):
+        if self.show_solution and data.part_of_answer:
+            return "DarkSeaGreen1"
+
+        if data.type == GraphDataType.EXISTS:
             return "white"
-        elif curr_type == GraphDataType.REMOVE:
+        elif data.type == GraphDataType.REMOVE:
             return "RosyBrown1"
-        elif curr_type == GraphDataType.ADD:
+        elif data.type == GraphDataType.ADD:
             return "DarkSeaGreen1"
         else:
             return ""
@@ -270,6 +278,18 @@ class GraphRenderer(Frame):
             self.current_work = KillableThread(
                 target=self.update_preview_size,
                 args=(rows, cols,))
+            self.current_work.start()
+
+            self.synchronizer.release()
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ToggleSolutionView)
+    def show_solution(self, event):
+        self.show_solution = not self.show_solution
+        if self.graph:
+            self.synchronizer.acquire()
+
+            self.kill_current_work()
+            self.current_work = KillableThread(target=self.draw)
             self.current_work.start()
 
             self.synchronizer.release()

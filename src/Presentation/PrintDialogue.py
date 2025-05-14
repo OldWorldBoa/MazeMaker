@@ -1,5 +1,4 @@
 import win32print
-import win32api
 import img2pdf
 import os
 
@@ -7,14 +6,13 @@ import os
 from tkinter import Toplevel, StringVar, Label, ttk, Canvas, filedialog
 
 from .StyledTkinter import StyledTkinter
+from ..Model.Constants import Constants
 
 
 class PrintDialogue(Toplevel):
     def __init__(self):
         super().__init__()
 
-        self.temp_png_file = "C:\\temp\\mm_tmp.png"
-        self.temp_pdf_file = "C:\\temp\\mm_tmp.pdf"
         self.pdf_printer_name = "Print to PDF"
         self.done_button = StyledTkinter.get_dark_button(self, text="Print", command=lambda: self.complete_print())
         self.info = Label(self, text="Select Printer")
@@ -57,7 +55,7 @@ class PrintDialogue(Toplevel):
             return
 
         with open(print_file, "wb") as f:
-            f.write(img2pdf.convert(self.temp_png_file))
+            f.write(img2pdf.convert(Constants.temp_png_file, Constants.temp_png_soln_file))
 
     def print(self):
         printer_name = self.printers.get()
@@ -65,6 +63,6 @@ class PrintDialogue(Toplevel):
         if printer_name == self.pdf_printer_name:
             self.print_to_pdf()
         else:
-            self.print_to_pdf(self.temp_pdf_file)
+            self.print_to_pdf(Constants.temp_pdf_file)
             win32print.SetDefaultPrinter(printer_name)
-            os.startfile(self.temp_pdf_file, "print")
+            os.startfile(Constants.temp_pdf_file, "print")
