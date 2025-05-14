@@ -1,7 +1,7 @@
 from .StyledTkinter import StyledTkinter
 from .Menu import Menu
 
-from tkinter import Frame, BOTH, NSEW, RAISED
+from tkinter import Frame, X, RAISED
 
 
 class TabContainer(Frame):
@@ -23,18 +23,16 @@ class TabContainer(Frame):
         return tab
 
     def display(self, **kwargs):
-        super().grid(TabContainer.get_display_options(**kwargs))
+        super().pack(kwargs)
 
         self.tab_menu.display()
-        self.tab_content_container.columnconfigure(0, weight=1)
-        self.tab_content_container.rowconfigure(0, weight=1)
-        self.tab_content_container.pack(expand=True, fill=BOTH)
+        self.tab_content_container.pack(expand=True, fill=X)
 
         self.set_active_tab(0)
 
     def set_active_tab(self, index):
         for tab in self.tabs:
-            tab.grid_remove()
+            tab.forget()
 
         for button in self.tab_menu.elements:
             btn_index = self.tab_menu.elements.index(button)
@@ -46,7 +44,7 @@ class TabContainer(Frame):
                 button.configure(fg=StyledTkinter.get_light_color())
                 button.configure(bg=StyledTkinter.get_dark_color())
 
-        self.tabs[index].grid(row=0, column=0, padx=(3, 3))
+        self.tabs[index].pack(expand=True, fill=X)
 
     @staticmethod
     def get_display_options(**kwargs):

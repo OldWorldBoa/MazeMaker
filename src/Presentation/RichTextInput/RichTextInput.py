@@ -1,5 +1,5 @@
 from PIL import Image, ImageTk
-from tkinter import Frame, Text, BOTH, INSERT, font, END, TclError
+from tkinter import Frame, Text, INSERT, font, TclError, X
 
 from ..StyledTkinter import StyledTkinter
 from .RichTextInputMenu import RichTextInputMenu
@@ -10,15 +10,15 @@ class RichTextInput(Frame):
         super().__init__(master, bg=StyledTkinter.get_medium_color())
 
         self.menu = RichTextInputMenu(self, self.input_symbol, self.set_input_image)
-        self.input = Text(self, height=8, font=font.Font(size=16))
+        self.input = Text(self, height=8, font=font.Font(size=16), width=1)
         self.images = {}
         self.image_cache = []
 
     def display(self, **kwargs):
-        super().grid(kwargs)
+        super().pack(kwargs)
 
         self.menu.display(pady=(0, 4))
-        self.input.pack()
+        self.input.pack(expand=True, fill=X)
 
     def input_symbol(self, symbol):
         self.input.insert(INSERT, symbol)

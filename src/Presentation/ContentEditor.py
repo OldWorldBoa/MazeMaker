@@ -101,7 +101,7 @@ class ContentEditor(Frame):
             # add items to the end
             for i in range(0, max_path_length - curr_length):
                 new_input = ContentInput(self.content_frame, curr_length + i)
-                new_input.display(row=curr_length + i + 1, pady=(0, 5))
+                new_input.display()
                 self.inputs.append(new_input)
         elif max_path_length < curr_length:
             # hide items over the end
