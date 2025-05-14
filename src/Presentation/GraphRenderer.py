@@ -91,9 +91,10 @@ class GraphRenderer(Frame):
         data = self.graph.get_vertex_data(vertex)
         x = self.padding + data.x * self.width + data.x * self.padding
         y = self.padding + data.y * self.height + data.y * self.padding
-        color = self.get_color_for_graph_data_type(data.type)
+        border_color = self.get_color_for_graph_data_type(data.type)
+        fill_color = self.get_fill_color_for_graph_data_type(data.type)
 
-        self.canvas.create_rectangle(x, y, x + self.width, y + self.height, outline=color, fill="white")
+        self.canvas.create_rectangle(x, y, x + self.width, y + self.height, outline=border_color, fill=fill_color)
         self.canvas.create_text(x + self.width / 2, y + self.height / 2, fill="black", font="Times 20 italic bold",
                                 text=data.text)
 
@@ -110,9 +111,10 @@ class GraphRenderer(Frame):
         x = self.get_edge_x(vertex, next_vertex)
         y = self.get_edge_y(vertex, next_vertex)
         edge_data = self.graph.get_edge_data(vertex, next_vertex)
-        color = self.get_color_for_graph_data_type(edge_data.type)
+        border_color = self.get_color_for_graph_data_type(edge_data.type)
+        fill_color = self.get_fill_color_for_graph_data_type(edge_data.type)
 
-        self.canvas.create_rectangle(x, y, x + self.padding, y + self.padding, outline=color, fill="white")
+        self.canvas.create_rectangle(x, y, x + self.padding, y + self.padding, outline=border_color, fill=fill_color)
         self.canvas.create_text(x + self.padding / 2, y + self.padding / 2, fill="black", font="Times 20 italic bold",
                                 text=edge_data.text)
 
@@ -156,6 +158,17 @@ class GraphRenderer(Frame):
             return "red"
         elif curr_type == GraphDataType.ADD:
             return "green"
+        else:
+            return ""
+
+    @staticmethod
+    def get_fill_color_for_graph_data_type(curr_type):
+        if curr_type == GraphDataType.EXISTS:
+            return "white"
+        elif curr_type == GraphDataType.REMOVE:
+            return "RosyBrown1"
+        elif curr_type == GraphDataType.ADD:
+            return "DarkSeaGreen1"
         else:
             return ""
 
