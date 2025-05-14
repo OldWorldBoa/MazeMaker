@@ -242,7 +242,7 @@ class SymbolSelector(Toplevel):
 
     def select_symbol(self, symbol):
         self.input_symbol_callback(symbol)
-        self.close()
+        self.close(None)
 
     def close(self, evt):
         self.master.focus_set()

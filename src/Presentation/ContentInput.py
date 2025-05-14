@@ -81,9 +81,13 @@ class ContentInput(Frame):
             self.answer.insert(0, load_data['answer'])
 
     def is_filled(self):
-        if self.question.get_text() != "" and self.answer.get_text() != "":
+        question_content = self.question.get_content()
+        answer_content = self.answer.get_content()
+
+        if (question_content["text"] != "" or question_content["placed_images"] != []) and \
+                (answer_content["text"] != "" or answer_content["placed_images"] != []):
             return True
         return False
 
     def get_as_dict(self):
-        return {'question': self.question.get_text(), 'answer': self.answer.get_text()}
+        return {'question': self.question.get_content(), 'answer': self.answer.get_content()}

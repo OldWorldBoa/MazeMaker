@@ -1,7 +1,7 @@
 import math
 
 from threading import Lock
-from tkinter import Frame, Canvas, BOTH, SUNKEN
+from tkinter import Frame, Canvas, BOTH, SUNKEN, Text, font, DISABLED, FLAT
 from pyeventbus3.pyeventbus3 import *
 
 from .StyledTkinter import StyledTkinter
@@ -96,8 +96,8 @@ class GraphRenderer(Frame):
         fill_color = self.get_fill_color_for_graph_data_type(data.type)
 
         self.canvas.create_rectangle(x, y, x + self.width, y + self.height, outline=border_color, fill=fill_color)
-        self.canvas.create_text(x + self.width / 2, y + self.height / 2, fill="black", font="Times 20 italic bold",
-                                text=data.text)
+        self.canvas.create_window((x + 1, y + 1), anchor="nw",
+                                  window=self.make_content_widget(data.content, self.height, self.width))
 
         self.draw_edges(vertex)
 
@@ -116,8 +116,37 @@ class GraphRenderer(Frame):
         fill_color = self.get_fill_color_for_graph_data_type(edge_data.type)
 
         self.canvas.create_rectangle(x, y, x + self.padding, y + self.padding, outline=border_color, fill=fill_color)
-        self.canvas.create_text(x + self.padding / 2, y + self.padding / 2, fill="black", font="Times 20 italic bold",
-                                text=edge_data.text)
+        self.canvas.create_window((x + self.padding/2 + 1, y + 1), anchor="n",
+                                  window=self.make_content_widget(edge_data.content, self.padding, self.padding))
+
+    def make_content_widget(self, content, height, width):
+        if content:
+            frame = Frame(self, height=height - 2, width=width - 2)
+            frame.grid_columnconfigure(0, weight=1)
+            frame.grid_rowconfigure(0, weight=1)
+            frame.pack()
+            frame.pack_propagate(False)
+
+            self.make_text_widget(content, frame)
+
+            return frame
+
+    @staticmethod
+    def make_text_widget(content, frame):
+        text = Text(frame, font=font.Font(size=16), relief=FLAT, width=1, height=1)
+        text.insert("1.0", content["text"])
+
+        images = content["placed_images"]
+        if images:
+            for image in images:
+                text.image_create(image["index"], image=image["image"])
+
+        text.tag_configure("center", justify='center')
+        text.tag_add("center", "1.0", "end")
+        text.pack(fill=BOTH, expand=True)
+        text.config(state=DISABLED)
+
+        return text
 
     def get_edge_x(self, vertex, next_vertex):
         vertex_data = self.graph.get_vertex_data(vertex)
