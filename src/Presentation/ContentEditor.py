@@ -72,7 +72,7 @@ class ContentEditor(Frame):
         self.inputs = [ContentInput(self.content_frame, i, inputs[i]) for i in range(len(inputs))]
 
         for i in range(len(self.inputs)):
-            self.inputs[i].display(row=i, pady=(0, 5))
+            self.inputs[i].display()
 
     def generate_maze(self):
         generate_maze_button = self.editor_menu.elements[0]

@@ -1,7 +1,7 @@
 import math
 
 from threading import Lock
-from tkinter import Frame, Canvas, BOTH, SUNKEN, Text, font, DISABLED, FLAT, X, Label
+from tkinter import Frame, Canvas, BOTH, SUNKEN, Text, font, FLAT, CENTER, DISABLED
 
 from PIL import ImageTk
 from pyeventbus3.pyeventbus3 import *
@@ -168,15 +168,18 @@ class GraphRenderer(Frame):
 
     def make_content_widget(self, data, height, width):
         if data.content:
-            frame = Frame(self.canvas, height=height-2, width=width-2, bg=self.get_fill_color_for_node(data))
+            frame = Frame(self.canvas,
+                          height=height-2,
+                          width=width-2,
+                          bg=self.get_fill_color_for_node(data))
             frame.pack()
             frame.pack_propagate(False)
 
-            self.make_text_widget(data, frame)
+            self.make_text_widget(data, frame, height-2)
 
             return frame
 
-    def make_text_widget(self, data, frame):
+    def make_text_widget(self, data, frame, height):
         text = Text(frame, font=font.Font(size=16), relief=FLAT, bg=self.get_fill_color_for_node(data))
         text.insert("1.0", data.content["text"])
 
@@ -189,8 +192,15 @@ class GraphRenderer(Frame):
 
         text.tag_configure("center", justify='center')
         text.tag_add("center", "1.0", "end")
+        text.config(state=DISABLED)
 
-        text.pack()
+        if not len(images):
+            text_height = text.count("1.0", "end", "ypixels")[0]
+            top_margin = (height - text_height) / 2
+        else:
+            top_margin = 0
+
+        text.pack(pady=(top_margin, 0))
 
     def get_edge_x(self, vertex, next_vertex):
         vertex_data = self.graph.get_vertex_data(vertex)

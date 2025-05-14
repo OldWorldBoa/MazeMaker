@@ -100,6 +100,9 @@ class SymbolSelector(Toplevel):
     def init_math_symbols(self):
         self.math_symbols = [
             '\u00F7',  # Division
+            '\u00D7',  # X Multiplication
+            '+',
+            '-',
             '\u00B7',  # Dot Multiplication
             '\u00B0',  # Degree
             '\u00B1',  # Plus/Minus
@@ -110,7 +113,6 @@ class SymbolSelector(Toplevel):
             '\u00BC',  # Power of quarter
             '\u00BD',  # Power of half
             '\u00BE',  # Power of three quarters
-            '\u00D7',  # X Multiplication
             '\u00D8',  # Ø
             '\u00F8',  # ø
             '\u2044',  # Fraction Slash
