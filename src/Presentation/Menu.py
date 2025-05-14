@@ -1,4 +1,4 @@
-from tkinter import Button, Frame, LEFT, X, FLAT
+from tkinter import Frame, LEFT, X
 from pyeventbus3.pyeventbus3 import *
 
 from ..Business.Events.SelectToolEvent import SelectToolEvent

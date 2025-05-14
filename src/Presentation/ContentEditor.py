@@ -18,14 +18,14 @@ class ContentEditor(Frame):
         PyBus.Instance().register(self, self.__class__.__name__)
 
         self.master = master
-        self.inner_content_frame = Frame(self)
+        self.inner_content_frame = Frame(self, bg="gray75")
         self.scrollable_canvas = Canvas(self.inner_content_frame, bd=0, highlightthickness=0, relief='ridge',
                                         bg="gray75")
         self.content_frame = Frame(self.inner_content_frame, bg="gray75")
         self.canvas_frame = self.scrollable_canvas.create_window((0, 0), anchor="nw", window=self.content_frame)
         self.content_scrollbar = Scrollbar(self.inner_content_frame, orient=VERTICAL,
-                                           command=self.scrollable_canvas.yview)
-        self.scrollable_canvas.bind_all("<MouseWheel>", self._on_mousewheel)
+                                           command=self.scrollable_canvas.yview, bg="gray75")
+        self.scrollable_canvas.bind_all("<MouseWheel>", self.on_mousewheel)
         self.scrollable_canvas.config(yscrollcommand=self.content_scrollbar.set)
         self.generate_button = StyledTkinter.get_styled_button(self, text="Generate Maze", command=self.generate_maze)
         self.inputs = []
@@ -36,13 +36,13 @@ class ContentEditor(Frame):
 
         self.generate_button.pack(side=TOP, fill=X, pady=(0, 2))
         self.inner_content_frame.pack(side=TOP, fill=BOTH, expand=True)
-        self.scrollable_canvas.pack(side=LEFT, fill=BOTH, expand=True)
+        self.scrollable_canvas.pack(side=LEFT, fill=BOTH, expand=True, padx=(0, 10))
         self.content_scrollbar.pack(side=RIGHT, fill=Y)
         self.scrollable_canvas.bind('<Configure>', self.change_width)
         self.content_frame.bind("<Configure>", self.on_frame_configure)
         self.content_frame.columnconfigure(0, weight=1)
 
-    def _on_mousewheel(self, event):
+    def on_mousewheel(self, event):
         self.scrollable_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
 
     def change_width(self, event):
