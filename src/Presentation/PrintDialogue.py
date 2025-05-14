@@ -1,12 +1,13 @@
 import win32print
 import img2pdf
-import os
-
 
 from tkinter import Toplevel, StringVar, Label, ttk, Canvas, filedialog
+from pyeventbus3.pyeventbus3 import *
 
 from .StyledTkinter import StyledTkinter
 from ..Model.Constants import Constants
+from ..Business.Events.DisplayMessage import DisplayMessage
+from ..Model.MessageSeverity import MessageSeverity
 
 
 class PrintDialogue(Toplevel):
@@ -43,7 +44,8 @@ class PrintDialogue(Toplevel):
         self.print()
         self.destroy()
 
-    def print_to_pdf(self, f_name=''):
+    @staticmethod
+    def print_to_pdf(f_name=''):
         if f_name != '':
             print_file = f_name
         else:
@@ -54,15 +56,25 @@ class PrintDialogue(Toplevel):
         if print_file == '' or print_file is None:
             return
 
-        with open(print_file, "wb") as f:
-            f.write(img2pdf.convert(Constants.temp_png_file, Constants.temp_png_soln_file))
+        try:
+            with open(print_file, "wb") as f:
+                f.write(img2pdf.convert(Constants.temp_png_file, Constants.temp_png_soln_file))
+
+            return True
+        except PermissionError as pe:
+            PyBus.Instance().post(DisplayMessage(
+                "Unable to save \"" + print_file + "\" due to lack of permissions. Check if it's open already.",
+                MessageSeverity.ERROR
+            ))
+
+            return False
 
     def print(self):
         printer_name = self.printers.get()
 
         if printer_name == self.pdf_printer_name:
-            self.print_to_pdf()
+            PrintDialogue.print_to_pdf()
         else:
-            self.print_to_pdf(Constants.temp_pdf_file)
-            win32print.SetDefaultPrinter(printer_name)
-            os.startfile(Constants.temp_pdf_file, "print")
+            if PrintDialogue.print_to_pdf(Constants.temp_pdf_file):
+                win32print.SetDefaultPrinter(printer_name)
+                os.startfile(Constants.temp_pdf_file, "print")

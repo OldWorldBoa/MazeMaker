@@ -1,4 +1,5 @@
 from tkinter import Tk, PhotoImage
+from pikepdf import _cpphelpers # Keep this here so pyinstaller bundles properly
 
 from src.Presentation.AppMediator import AppMediator
 

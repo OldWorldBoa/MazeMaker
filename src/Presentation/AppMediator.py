@@ -61,7 +61,9 @@ class AppMediator(Frame):
         if not str(event.file).endswith('.png'):
             event.file += '.png'
 
+        self.content_frame.graph_renderer.canvas.configure(bg="white")
         self.export_to_file(event.file)
+        self.content_frame.graph_renderer.canvas.configure(bg=StyledTkinter.get_light_color())
 
     @subscribe(threadMode=Mode.BACKGROUND, onEvent=PrintCanvas)
     def print_canvas(self, event):
@@ -87,6 +89,9 @@ class AppMediator(Frame):
         print_dialogue.display()
 
     def export_to_file(self, file_name):
+        # Let the screen have time to stop changing
+        time.sleep(0.05)
+
         x = self.content_frame.graph_renderer.winfo_rootx() + self.content_frame.graph_renderer.canvas.winfo_x()
         y = self.content_frame.graph_renderer.winfo_rooty() + self.content_frame.graph_renderer.canvas.winfo_y()
         xx = x + self.content_frame.graph_renderer.get_used_width()

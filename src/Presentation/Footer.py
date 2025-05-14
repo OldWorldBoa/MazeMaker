@@ -30,5 +30,9 @@ class Footer(Frame):
     def display_message(self, event):
         if event.message_severity == MessageSeverity.WARNING:
             self.message.config(fg="RosyBrown1")
+        elif event.message_severity == MessageSeverity.ERROR:
+            self.message.config(fg="brown1")
+        else:
+            self.message.config(fg="white")
 
         self.message.config(text=event.text)
