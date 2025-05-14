@@ -16,6 +16,8 @@ from src.Business.Events.GraphRendererStateLoaded import GraphRendererStateLoade
 from src.Business.Events.ResetGraphPreview import ResetGraphPreview
 from src.Business.Events.GraphChanged import GraphChanged
 from src.Business.Events.LoadGraphData import LoadGraphData
+from src.Business.Events.ChangeGraphHeight import ChangeGraphHeight
+from src.Business.Events.ChangeGraphWidth import ChangeGraphWidth
 from src.Business.Decorators.ClampNegativeArgs import clamp_negative_args
 
 
@@ -24,13 +26,6 @@ class GraphRenderer(Frame):
         super().__init__(master, borderwidth=1, relief=SUNKEN)
         PyBus.Instance().register(self, self.__class__.__name__)
 
-        self.synchronizer = Lock()
-        self.current_work = None
-        self.canvas = Canvas(self, bg=StyledTkinter.get_light_color())
-        self.menu = GraphRendererMenu(self)
-        self.graph = None
-        self.content = None
-        self.drawn_edges = []
         self.height = 100
         self.width = 100
         self.padding = 50
@@ -38,6 +33,14 @@ class GraphRenderer(Frame):
         self.columns = 0
         self.preview_rows = 0
         self.preview_columns = 0
+
+        self.synchronizer = Lock()
+        self.current_work = None
+        self.canvas = Canvas(self, bg=StyledTkinter.get_light_color())
+        self.menu = GraphRendererMenu(self, self.height, self.width)
+        self.graph = None
+        self.content = None
+        self.drawn_edges = []
 
     def display(self, **kwargs):
         super().grid(kwargs)
@@ -154,24 +157,24 @@ class GraphRenderer(Frame):
     def get_edge_x(self, vertex, next_vertex):
         vertex_data = self.graph.get_vertex_data(vertex)
         next_vertex_data = self.graph.get_vertex_data(next_vertex)
-        x = self.padding + vertex_data.x * self.width + vertex_data.x * self.padding + self.width / 2
+        center_x = vertex_data.x * self.width + (vertex_data.x + 1) * self.padding + self.width / 2
 
-        return x + self.get_direction_modifier(next_vertex_data.x - vertex_data.x)
+        return center_x + self.get_direction_modifier(next_vertex_data.x - vertex_data.x, self.width)
 
     def get_edge_y(self, vertex, next_vertex):
         vertex_data = self.graph.get_vertex_data(vertex)
         next_vertex_data = self.graph.get_vertex_data(next_vertex)
-        y = self.padding + vertex_data.y * self.height + vertex_data.y * self.padding + self.height / 2
+        center_y = vertex_data.y * self.height + (vertex_data.y + 1) * self.padding + self.height / 2
 
-        return y + self.get_direction_modifier(next_vertex_data.y - vertex_data.y)
+        return center_y + self.get_direction_modifier(next_vertex_data.y - vertex_data.y, self.height)
 
-    def get_direction_modifier(self, direction):
+    def get_direction_modifier(self, direction, scale):
         if direction > 0:
-            return self.width / 2
+            return scale / 2
         elif direction == 0:
             return -self.padding / 2
         else:  # direction < 0
-            return -self.width / 2 - self.padding
+            return -scale / 2 - self.padding
 
     def get_state_to_save(self):
         return GraphRendererState(self.graph, self.rows, self.columns)
@@ -268,6 +271,16 @@ class GraphRenderer(Frame):
         self.current_work.start()
 
         self.synchronizer.release()
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ChangeGraphWidth)
+    def change_graph_width(self, event):
+        self.width = int(event.new_width)
+        self.draw()
+
+    @subscribe(threadMode=Mode.BACKGROUND, onEvent=ChangeGraphHeight)
+    def change_graph_width(self, event):
+        self.height = int(event.new_height)
+        self.draw()
 
     def graph_changed(self):
         PyBus.Instance().post(GraphChanged(self.rows, self.columns))
