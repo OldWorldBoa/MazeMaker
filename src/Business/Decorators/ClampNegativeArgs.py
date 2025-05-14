@@ -1,14 +1,15 @@
 import numbers
 
-def ClampNegativeArgs(func):
-	def wrapperClampNegativeArgs(*args, **kwargs):
-		newargs = []
-		for arg in args:
-			if isinstance(arg, numbers.Number):
-				newargs.append(max(0, arg))
-			else:
-				newargs.append(arg)
 
-		return func(*newargs, **kwargs)
+def clamp_negative_args(func):
+    def wrapper_clamp_negative_args(*args, **kwargs):
+        new_args = []
+        for arg in args:
+            if isinstance(arg, numbers.Number):
+                new_args.append(max(0, arg))
+            else:
+                new_args.append(arg)
 
-	return wrapperClampNegativeArgs
+        return func(*new_args, **kwargs)
+
+    return wrapper_clamp_negative_args

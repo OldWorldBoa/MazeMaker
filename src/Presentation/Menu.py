@@ -1,52 +1,55 @@
 from tkinter import Button, Frame, LEFT, X, FLAT
 from pyeventbus3.pyeventbus3 import *
 
-from ..Business.Events.SelectToolEvent import SelectToolEvent 
+from ..Business.Events.SelectToolEvent import SelectToolEvent
 from ..Business.Tools.Tool import Tool
 from ..Business.Tools.DrawMazeTool import DrawMazeTool
 from ..Business.Tools.SaveTool import SaveTool
 from ..Business.Tools.LoadTool import LoadTool
 from ..Business.Tools.ExportTool import ExportTool
 
+
+# The click button command handlers require one parameter,
+# but it isn't currently used so we are ignoring the following:
+# noinspection PyUnusedLocal,PyMethodMayBeStatic,PyMethodParameters
 class Menu(Frame):
-  def __init__(self, master):
-    super().__init__(master, bg="grey")
+    def __init__(self, master):
+        super().__init__(master, bg="grey")
 
-    self.master = master
-    self.initButtons()
+        self.master = master
+        self.buttons = []
+        self.init_buttons()
 
-  def initButtons(self):
-    self.buttons = []
+    def init_buttons(self):
+        self.add_button("Save", self.click_save)
+        self.add_button("Load", self.click_load)
+        self.add_button("Export", self.click_export)
+        self.add_button("Draw Maze", self.click_draw_maze)
+        self.add_button("Edit Text", self.click_edit_text)
 
-    self.addButton("Save", self.ClickSave)
-    self.addButton("Load", self.ClickLoad)
-    self.addButton("Export", self.ClickExport)
-    self.addButton("Draw Maze", self.ClickDrawMaze)
-    self.addButton("Edit Text", self.ClickEditText)
+    def add_button(self, text, command):
+        self.buttons.append(
+            Button(self, text=text, command=command, relief=FLAT,
+                   bg="gray40", fg="gray88", activebackground="gray15",
+                   activeforeground="gray63"))
 
-  def addButton(self, text, command):
-    self.buttons.append(
-      Button(self, text=text, command=command, relief=FLAT,
-        bg="gray40", fg="gray88", activebackground="gray15",
-        activeforeground="gray63"))
+    def pack(self):
+        super().pack(expand=False, fill=X)
 
-  def pack(self):
-    super().pack(expand=False, fill=X)
+        for button in self.buttons:
+            button.pack(side=LEFT, padx=(0, 5), pady=(0, 5))
 
-    for button in self.buttons:
-      button.pack(side=LEFT, padx=(0, 5), pady=(0, 5))
+    def click_save(click_event):
+        PyBus.Instance().post(SelectToolEvent(SaveTool()))
 
-  def ClickSave(clickEvent):
-    PyBus.Instance().post(SelectToolEvent(SaveTool()))
+    def click_load(click_event):
+        PyBus.Instance().post(SelectToolEvent(LoadTool()))
 
-  def ClickLoad(clickEvent):
-    PyBus.Instance().post(SelectToolEvent(LoadTool()))
+    def click_export(click_event):
+        PyBus.Instance().post(SelectToolEvent(ExportTool()))
 
-  def ClickExport(clickEvent):
-    PyBus.Instance().post(SelectToolEvent(ExportTool()))
+    def click_draw_maze(click_event):
+        PyBus.Instance().post(SelectToolEvent(DrawMazeTool()))
 
-  def ClickDrawMaze(clickEvent):
-    PyBus.Instance().post(SelectToolEvent(DrawMazeTool()))
-
-  def ClickEditText(clickEvent):
-    PyBus.Instance().post(SelectToolEvent(Tool()))
+    def click_edit_text(click_event):
+        PyBus.Instance().post(SelectToolEvent(Tool()))

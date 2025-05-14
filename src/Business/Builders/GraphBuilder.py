@@ -1,64 +1,65 @@
 from ...Model.BiDirectionalGraph import BiDirectionalGraph
 from ...Model.GraphDataType import GraphDataType
 from ...Model.GraphData import GraphData
-from ..Decorators.ClampNegativeArgs import ClampNegativeArgs
+from ..Decorators.ClampNegativeArgs import clamp_negative_args
 
-class GraphBuilder():
-  def __init__(self):
-    self.graph = BiDirectionalGraph()
-    self.rows = 0
-    self.columns = 0
-    self.previewRows = 0
-    self.previewColumns = 0
 
-  @ClampNegativeArgs
-  def current(self, rows, columns):
-    self.rows = rows
-    self.columns = columns
+class GraphBuilder:
+    def __init__(self):
+        self.graph = BiDirectionalGraph()
+        self.rows = 0
+        self.columns = 0
+        self.previewRows = 0
+        self.previewColumns = 0
 
-    return self
+    @clamp_negative_args
+    def current(self, rows, columns):
+        self.rows = rows
+        self.columns = columns
 
-  @ClampNegativeArgs
-  def preview(self, previewRows, previewColumns):
-    self.previewRows = previewRows
-    self.previewColumns = previewColumns
+        return self
 
-    return self
+    @clamp_negative_args
+    def preview(self, preview_rows, preview_columns):
+        self.previewRows = preview_rows
+        self.previewColumns = preview_columns
 
-  def build(self):
-    return self.createGraph()
+        return self
 
-  def createGraph(self):
-    self.graph = BiDirectionalGraph()
+    def build(self):
+        return self.create_graph()
 
-    for i in range(max(self.rows, self.previewRows)):
-      for j in range(max(self.columns, self.previewColumns)):
-        vertexType = self.getVertexType(i, j)
+    def create_graph(self):
+        self.graph = BiDirectionalGraph()
 
-        if vertexType != GraphDataType.SKIP:
-          vertexId = str(i) + "," + str(j)
-          self.graph.addVertex(vertexId)
-          self.graph.setVertexData(vertexId, GraphData(vertexType, i, j))
+        for i in range(max(self.rows, self.previewRows)):
+            for j in range(max(self.columns, self.previewColumns)):
+                vertex_type = self.get_vertex_type(i, j)
 
-          if i > 0:
-            self.graph.addEdge(vertexId, str(i-1) + "," + str(j))
-            self.graph.setEdgeData(vertexId, str(i-1) + "," + str(j), GraphData(vertexType, 0, 0))
+                if vertex_type != GraphDataType.SKIP:
+                    vertex_id = str(i) + "," + str(j)
+                    self.graph.add_vertex(vertex_id)
+                    self.graph.set_vertex_data(vertex_id, GraphData(vertex_type, i, j))
 
-          if j > 0:
-            self.graph.addEdge(vertexId, str(i) + "," + str(j-1))
-            self.graph.setEdgeData(vertexId, str(i) + "," + str(j-1), GraphData(vertexType, 0, 0))
-            
-    return self.graph
+                    if i > 0:
+                        self.graph.add_edge(vertex_id, str(i - 1) + "," + str(j))
+                        self.graph.set_edge_data(vertex_id, str(i - 1) + "," + str(j), GraphData(vertex_type, 0, 0))
 
-  def getVertexType(self, row, column):
-    if (row < self.rows and row < self.previewRows and 
-        column < self.columns and column < self.previewColumns):
-      return GraphDataType.EXISTS
-    elif ((row >= self.rows and column < self.previewColumns) or 
-          (column >= self.columns and row < self.previewRows)):
-      return GraphDataType.ADD
-    elif ((row < self.rows and column >= self.previewColumns) or 
-         (column < self.columns and row >= self.previewRows)):
-      return GraphDataType.REMOVE
-    else:
-      return GraphDataType.SKIP
+                    if j > 0:
+                        self.graph.add_edge(vertex_id, str(i) + "," + str(j - 1))
+                        self.graph.set_edge_data(vertex_id, str(i) + "," + str(j - 1), GraphData(vertex_type, 0, 0))
+
+        return self.graph
+
+    def get_vertex_type(self, row, column):
+        if (row < self.rows and row < self.previewRows and
+                column < self.columns and column < self.previewColumns):
+            return GraphDataType.EXISTS
+        elif ((row >= self.rows and column < self.previewColumns) or
+              (column >= self.columns and row < self.previewRows)):
+            return GraphDataType.ADD
+        elif ((row < self.rows and column >= self.previewColumns) or
+              (column < self.columns and row >= self.previewRows)):
+            return GraphDataType.REMOVE
+        else:
+            return GraphDataType.SKIP

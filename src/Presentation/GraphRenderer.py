@@ -10,7 +10,7 @@ from ..Business.Builders.GraphBuilder import GraphBuilder
 from ..Business.Events.UpdateGraph import UpdateGraph
 from ..Business.Events.UpdateGraphPreview import UpdateGraphPreview
 from ..Business.Events.GraphLoaded import GraphLoaded
-from ..Business.Decorators.ClampNegativeArgs import ClampNegativeArgs
+from ..Business.Decorators.ClampNegativeArgs import clamp_negative_args
 
 class GraphRenderer(Frame):
   def __init__(self, master):
@@ -31,21 +31,21 @@ class GraphRenderer(Frame):
     super().pack(fill=BOTH, expand=True)
     self.canvas.pack(fill=BOTH, expand=True)
 
-  @ClampNegativeArgs
+  @clamp_negative_args
   def updateGraphComponentSize(self, height, width):
     if (self.height != height or self.width != width):
       self.height = height
       self.width = width
       self.draw()
 
-  @ClampNegativeArgs
+  @clamp_negative_args
   def updateSize(self, rows, columns):
     if (self.rows != rows or self.columns != columns):
       self.rows = rows
       self.columns = columns
       self.refreshGraph()
 
-  @ClampNegativeArgs
+  @clamp_negative_args
   def updatePreviewSize(self, previewRows, previewColumns):
     if (self.previewRows != previewRows or self.previewColumns != previewColumns):
       self.previewRows = previewRows
@@ -72,7 +72,7 @@ class GraphRenderer(Frame):
     currCol = 0
     
     for vertex in self.graph.vertices.keys():
-      vertexData = self.graph.getVertexData(vertex)
+      vertexData = self.graph.get_vertex_data(vertex)
 
       if (vertexData.type != GraphDataType.SKIP):
         self.drawRect(vertexData)

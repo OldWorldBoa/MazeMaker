@@ -1,107 +1,115 @@
 from random import randrange
 
-class BiDirectionalGraph():
-  def __init__(self):
-    self.vertices = {}
-    self.vertexData = {}
-    self.edgeData = {}
 
-  def adjacent(self, vertex, nextVertex):
-    if (vertex in self.vertices):
-      if (nextVertex in self.vertices[vertex]):
-        return True
+class BiDirectionalGraph:
+    def __init__(self):
+        self.vertices = {}
+        self.vertexData = {}
+        self.edgeData = {}
 
-    return False
+    def adjacent(self, vertex, next_vertex):
+        if vertex in self.vertices:
+            if next_vertex in self.vertices[vertex]:
+                return True
 
-  def neighbours(self, vertex):
-    if (vertex in self.vertices):
-      return self.vertices[vertex]
+        return False
 
-    return []
+    def neighbours(self, vertex):
+        if vertex in self.vertices:
+            return self.vertices[vertex]
 
-  def addVertex(self, vertex, adjVertices = []):
-    self.vertices[vertex] = adjVertices.copy()
+        return []
 
-  def removeVertex(self, vertex):
-    if (vertex in self.vertices):
-      neighbours = self.neighbours(vertex)
-      self.vertices.pop(vertex)
+    def add_vertex(self, vertex, adj_vertices=None):
+        if adj_vertices is None:
+            adj_vertices = []
 
-      for neighbour in neighbours:
-        self.vertices[neighbour].remove(vertex)
+        self.vertices[vertex] = adj_vertices.copy()
 
-  def addEdge(self, vertex, nextVertex):
-    if (vertex in self.vertices and nextVertex in self.vertices):
-      self.vertices[vertex].append(nextVertex)
-      self.vertices[nextVertex].append(vertex)
+    def remove_vertex(self, vertex):
+        if vertex in self.vertices:
+            neighbours = self.neighbours(vertex)
+            self.vertices.pop(vertex)
 
-  def removeEdge(self, vertex, nextVertex):
-    if (vertex in self.vertices and nextVertex in self.vertices):
-      self.vertices[vertex].remove(nextVertex)
-      self.vertices[nextVertex].remove(vertex)
+            for neighbour in neighbours:
+                self.vertices[neighbour].remove(vertex)
 
-  def getVertexData(self, vertex):
-    if (vertex in self.vertexData):
-      return self.vertexData[vertex]
+    def add_edge(self, vertex, next_vertex):
+        if vertex in self.vertices and next_vertex in self.vertices:
+            self.vertices[vertex].append(next_vertex)
+            self.vertices[next_vertex].append(vertex)
 
-    return {}
+    def remove_edge(self, vertex, next_vertex):
+        if vertex in self.vertices and next_vertex in self.vertices:
+            self.vertices[vertex].remove(next_vertex)
+            self.vertices[next_vertex].remove(vertex)
 
-  def setVertexData(self, vertex, data):
-    if (vertex in self.vertices):
-      self.vertexData[vertex] = data
+    def get_vertex_data(self, vertex):
+        if vertex in self.vertexData:
+            return self.vertexData[vertex]
 
-  def getEdgeData(self, vertex, nextVertex):
-    key = self.getEdgeKey(vertex, nextVertex)
-    if (key in self.edgeData):
-      return self.edgeData[key]
+        return {}
 
-    return {}
+    def set_vertex_data(self, vertex, data):
+        if vertex in self.vertices:
+            self.vertexData[vertex] = data
 
-  def setEdgeData(self, vertex, nextVertex, data):
-    if (vertex in self.vertices and nextVertex in self.vertices and vertex != nextVertex):
-      if (nextVertex in self.vertices[vertex] and vertex in self.vertices[nextVertex]):
-        key = self.getEdgeKey(vertex, nextVertex)
-        self.edgeData[key] = data
+    def get_edge_data(self, vertex, next_vertex):
+        key = self.get_edge_key(vertex, next_vertex)
+        if key in self.edgeData:
+            return self.edgeData[key]
 
-  def getEdgeKey(self, vertex, nextVertex):
-    return min(vertex, nextVertex) + max(vertex, nextVertex)
+        return {}
 
-  def getRandomPath(self, start, end, coveragePercent):
-    if (start in self.vertices and end in self.vertices and 
-        coveragePercent >= 2 / len(self.vertices) * 100 and coveragePercent <= 100):
-      path = []
-      done = False
+    def set_edge_data(self, vertex, next_vertex, data):
+        if vertex in self.vertices and next_vertex in self.vertices and vertex != next_vertex:
+            if next_vertex in self.vertices[vertex] and vertex in self.vertices[next_vertex]:
+                key = self.get_edge_key(vertex, next_vertex)
+                self.edgeData[key] = data
 
-      paths = self.findAllPaths(start, end)
-      pathsWithcoverage = []
+    @staticmethod
+    def get_edge_key(vertex, next_vertex):
+        return min(vertex, next_vertex) + max(vertex, next_vertex)
 
-      for path in paths:
-        if (len(path) / len(self.vertices) * 100 >= coveragePercent):
-          pathsWithcoverage.append(path)
+    def get_random_path(self, start, end, coverage_percent):
+        if (
+                start in self.vertices and
+                end in self.vertices and
+                2 / len(self.vertices) * 100 <= coverage_percent <= 100):
 
-      numPaths = len(pathsWithcoverage)
-      if numPaths == 1:
-        return pathsWithcoverage[0]
-      elif numPaths > 1:
-        return pathsWithcoverage[randrange(numPaths)]
+            paths = self.find_all_paths(start, end)
+            paths_with_coverage = []
 
-    return []
+            for path in paths:
+                if len(path) / len(self.vertices) * 100 >= coverage_percent:
+                    paths_with_coverage.append(path)
 
-  def findAllPaths(self, start, end, path=[]):
-    if start not in self.vertices or end not in self.vertices:
-      return []
+            num_paths = len(paths_with_coverage)
+            if num_paths == 1:
+                return paths_with_coverage[0]
+            elif num_paths > 1:
+                return paths_with_coverage[randrange(num_paths)]
 
-    path.append(start)
+        return []
 
-    if start == end:
-      return [path]
+    def find_all_paths(self, start, end, path=None):
+        if path is None:
+            path = []
 
-    paths = []
+        if start not in self.vertices or end not in self.vertices:
+            return []
 
-    for vertex in self.vertices[start]:
-      if vertex not in path:
-        newpaths = self.findAllPaths(vertex, end, path.copy())
-        for newpath in newpaths:
-          paths.append(newpath)
-          
-    return paths
+        path.append(start)
+
+        if start == end:
+            return [path]
+
+        paths = []
+
+        for vertex in self.vertices[start]:
+            if vertex not in path:
+                new_paths = self.find_all_paths(vertex, end, path.copy())
+                for new_path in new_paths:
+                    paths.append(new_path)
+
+        return paths

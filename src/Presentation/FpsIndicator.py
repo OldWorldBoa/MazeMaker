@@ -1,28 +1,29 @@
 import time
-from decimal import Decimal
-from tkinter import Text, Tk, END, RIGHT
 
-class FpsIndicator():
-  def __init__(self, master):
-    self.textBox = Text(master, height=1, width=8)
-    self.fpsStart = time.time()
-    self.currentFps = 0
-    self.lastTicknum = 0
+from tkinter import Text, END, RIGHT
 
-  def pack(self):
-    self.textBox.pack(side=RIGHT)
-    self.textBox.insert(END, "...")
 
-  def updateFps(self, tickNum):
-    now = time.time()
-    if now > self.fpsStart + 1:
-      if self.lastTicknum == 0: 
-        self.lastTicknum = tickNum
-        self.fpsStart = now
-      else:
-        self.currentFps = (tickNum - self.lastTicknum) / (now - self.fpsStart)
-        self.textBox.delete('1.0', END)
-        self.textBox.insert(END, f"{self.currentFps:.2f}fps")
+class FpsIndicator:
+    def __init__(self, master):
+        self.textBox = Text(master, height=1, width=8)
+        self.fpsStart = time.time()
+        self.current_fps = 0
+        self.last_tick_num = 0
 
-        self.lastTicknum = tickNum
-        self.fpsStart = now
+    def pack(self):
+        self.textBox.pack(side=RIGHT)
+        self.textBox.insert(END, "...")
+
+    def update_fps(self, tick_num):
+        now = time.time()
+        if now > self.fpsStart + 1:
+            if self.last_tick_num == 0:
+                self.last_tick_num = tick_num
+                self.fpsStart = now
+            else:
+                self.current_fps = (tick_num - self.last_tick_num) / (now - self.fpsStart)
+                self.textBox.delete('1.0', END)
+                self.textBox.insert(END, f"{self.current_fps:.2f}fps")
+
+                self.last_tick_num = tick_num
+                self.fpsStart = now

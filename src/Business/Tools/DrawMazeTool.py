@@ -4,13 +4,14 @@ from .Tool import Tool
 from ..Events.UpdateGraphPreview import UpdateGraphPreview
 from ..Events.UpdateGraph import UpdateGraph
 
+
 class DrawMazeTool(Tool):
-  def __init__(self):
-    pass
-    
-  def mouseClick(self, event):
-    PyBus.Instance().post(UpdateGraph(event.x,event.y))
+    def __init__(self):
+        super().__init__()
+        pass
 
-  def mouseMove(self, event):
-    PyBus.Instance().post(UpdateGraphPreview(event.x,event.y))
+    def mouse_click(self, event):
+        PyBus.Instance().post(UpdateGraph(event.x, event.y))
 
+    def mouse_move(self, event):
+        PyBus.Instance().post(UpdateGraphPreview(event.x, event.y))
