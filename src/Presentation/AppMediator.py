@@ -8,7 +8,7 @@ from pyeventbus3.pyeventbus3 import *
 
 from .Footer import Footer
 from .MainFrame import MainFrame
-from .Menu import Menu
+from .MainMenu import MainMenu
 from .StyledTkinter import StyledTkinter
 from .PrintDialogue import PrintDialogue
 from src.Business.Events.SaveToFile import SaveToFile
@@ -28,7 +28,7 @@ class AppMediator(Frame):
         self.master = master
         self.master.title("Maze Maker")
 
-        self.menu = Menu(self)
+        self.menu = MainMenu(self)
         self.content_frame = MainFrame(self)
         self.footer = Footer(self)
 

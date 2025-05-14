@@ -2,7 +2,7 @@ from tkinter import Frame, BOTH
 from pyeventbus3.pyeventbus3 import *
 
 from .ContentEditor import ContentEditor
-from .GraphRenderer import GraphRenderer
+from src.Presentation.GraphRenderer.GraphRenderer import GraphRenderer
 from .StyledTkinter import StyledTkinter
 from..Business.Events.ToggleContentEditor import ToggleContentEditor
 
