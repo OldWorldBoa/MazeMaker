@@ -1,6 +1,10 @@
 # Installation
-Download [this](https://drive.google.com/uc?id=1TMQoJ9FiQthlucI9lzC3EAXUf3-PJIf7&export=download)
+Download the [latest version](https://drive.google.com/uc?id=1D9o52jChc9EKH1Ec2zxtuO2BxzzAwUEs&export=download)
 or clone the repo and build an exe yourself!
+
+### Previous Versions
+
+* [v1](https://drive.google.com/uc?id=1TMQoJ9FiQthlucI9lzC3EAXUf3-PJIf7&export=download)
 
 # Dependencies
 - pip install pywin32
