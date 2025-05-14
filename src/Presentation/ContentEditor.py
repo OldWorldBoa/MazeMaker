@@ -27,7 +27,7 @@ class ContentEditor(Frame):
                                            command=self.scrollable_canvas.yview, bg="gray75")
         self.scrollable_canvas.bind_all("<MouseWheel>", self.on_mousewheel)
         self.scrollable_canvas.config(yscrollcommand=self.content_scrollbar.set)
-        self.generate_button = StyledTkinter.get_styled_button(self, text="Generate Maze", command=self.generate_maze)
+        self.generate_button = StyledTkinter.get_dark_button(self, text="Generate Maze", command=self.generate_maze)
         self.inputs = []
         self.synchronizer = Lock()
 

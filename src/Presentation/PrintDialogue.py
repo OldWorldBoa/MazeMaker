@@ -16,7 +16,7 @@ class PrintDialogue(Toplevel):
         self.temp_png_file = "C:\\temp\\mm_tmp.png"
         self.temp_pdf_file = "C:\\temp\\mm_tmp.pdf"
         self.pdf_printer_name = "Print to PDF"
-        self.done_button = StyledTkinter.get_styled_button(self, text="Print", command=lambda: self.complete_print())
+        self.done_button = StyledTkinter.get_dark_button(self, text="Print", command=lambda: self.complete_print())
         self.info = Label(self, text="Select Printer")
         self.preview = Canvas(self)
         self.printers = ttk.Combobox(self, width=35, textvariable=StringVar())

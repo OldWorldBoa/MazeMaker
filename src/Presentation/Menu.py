@@ -16,7 +16,7 @@ from ..Business.Tools.PrintTool import PrintTool
 # noinspection PyUnusedLocal,PyMethodMayBeStatic,PyMethodParameters
 class Menu(Frame):
     def __init__(self, master):
-        super().__init__(master, bg="grey")
+        super().__init__(master, bg=StyledTkinter.get_dark_color())
 
         self.master = master
         self.buttons = []
@@ -31,7 +31,7 @@ class Menu(Frame):
         self.add_button("Print", self.click_print)
 
     def add_button(self, text, command):
-        self.buttons.append(StyledTkinter.get_styled_button(self, text=text, command=command))
+        self.buttons.append(StyledTkinter.get_dark_button(self, text=text, command=command))
 
     def display(self):
         super().pack(expand=False, fill=X)

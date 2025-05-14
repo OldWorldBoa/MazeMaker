@@ -1,7 +1,6 @@
 from tkinter import Frame, Text, BOTH
 
 from .RichTextInputMenu import RichTextInputMenu
-from .SymbolSelector import SymbolSelector
 
 
 class RichTextInput(Frame):
@@ -10,11 +9,9 @@ class RichTextInput(Frame):
 
         self.menu = RichTextInputMenu(self)
         self.input = Text(self, height=15)
-        self.symbol_selector = SymbolSelector(self)
 
     def display(self, **kwargs):
         super().grid(kwargs)
 
         self.menu.display()
-        self.symbol_selector.display()
         self.input.pack(fill=BOTH)

@@ -4,6 +4,7 @@ from threading import Lock
 from tkinter import Frame, Canvas, BOTH, SUNKEN
 from pyeventbus3.pyeventbus3 import *
 
+from .StyledTkinter import StyledTkinter
 from ..Business.Infrastructure.KillableThread import KillableThread
 from ..Model.GraphDataType import GraphDataType
 from ..Model.GraphRendererState import GraphRendererState
@@ -24,7 +25,7 @@ class GraphRenderer(Frame):
 
         self.synchronizer = Lock()
         self.current_work = None
-        self.canvas = Canvas(self, bg="gray82")
+        self.canvas = Canvas(self, bg=StyledTkinter.get_light_color())
         self.graph = None
         self.content = None
         self.drawn_edges = []

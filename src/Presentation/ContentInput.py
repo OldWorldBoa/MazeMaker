@@ -16,10 +16,10 @@ class ContentInput(Frame):
         self.header_border = Frame(self, bg="gray40")
         self.header = Frame(self.header_border, bg="gray75")
         self.toggle_text = StringVar(value="+")
-        self.toggle_display = StyledTkinter.get_styled_button(self.header,
-                                                              textvariable=self.toggle_text,
-                                                              command=self.toggle_input_display,
-                                                              width=2)
+        self.toggle_display = StyledTkinter.get_dark_button(self.header,
+                                                            textvariable=self.toggle_text,
+                                                            command=self.toggle_input_display,
+                                                            width=2)
         self.toggle_display_label = Label(self.header, bg="gray75", text="Question " + str(question_number + 1))
 
         self.question_label = Label(self, bg="gray75", text="Question")

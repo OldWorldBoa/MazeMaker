@@ -1,14 +1,15 @@
-from tkinter import Frame, BOTH, W
+from tkinter import Frame, BOTH
 from pyeventbus3.pyeventbus3 import *
 
 from .ContentEditor import ContentEditor
 from .GraphRenderer import GraphRenderer
+from .StyledTkinter import StyledTkinter
 from..Business.Events.ToggleContentEditor import ToggleContentEditor
 
 
 class MainFrame(Frame):
     def __init__(self, master):
-        super().__init__(master, bg="grey")
+        super().__init__(master, bg=StyledTkinter.get_dark_color())
 
         PyBus.Instance().register(self, self.__class__.__name__)
 

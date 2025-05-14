@@ -1,4 +1,7 @@
-from tkinter import Frame, Label
+import math
+from tkinter import Frame, LEFT, OUTSIDE
+
+from ..StyledTkinter import StyledTkinter
 
 
 # This class helps to select unicode symbols
@@ -6,13 +9,30 @@ class SymbolSelector(Frame):
     def __init__(self, master):
         super().__init__(master)
 
-        self.category_symbols = [
-            '\u03C0',  # Pi for Greek Symbols
-            '\u00F7',  # Division for Math Symbols
-            '\u00E9',  # é for Accents
-            '\u0024',  # $ for Business
+        self.category_buttons = [
+            StyledTkinter.get_dark_button(self, text='\u00F7', command=self.select_math_symbols),
+            StyledTkinter.get_dark_button(self, text='\u03C0', command=self.select_greek_symbols),
+            StyledTkinter.get_dark_button(self, text='\u00E9', command=self.select_accent_symbols),
+            StyledTkinter.get_dark_button(self, text='\u0024', command=self.select_business_symbols)
         ]
 
+        self.greek_symbol_frame = Frame(self)
+        self.math_symbol_frame = Frame(self)
+        self.accent_symbol_frame = Frame(self)
+        self.business_symbol_frame = Frame(self)
+
+        self.greek_symbols = []
+        self.math_symbols = []
+        self.accent_symbols = []
+        self.business_symbols = []
+        self.width = 7
+
+        self.init_greek_symbols()
+        self.init_math_symbols()
+        self.init_accent_symbols()
+        self.init_business_symbols()
+
+    def init_greek_symbols(self):
         self.greek_symbols = [
             # Capital
             '\u0393',  # Gamma
@@ -40,8 +60,13 @@ class SymbolSelector(Frame):
             '\u03C6',  # Phi
             '\u03C8',  # Psi
             '\u03C9',  # Omega
-            '\u03D6'   # Other Pi
+            '\u03D6'  # Other Pi
         ]
+
+        self.init_frame(self.greek_symbol_frame, len(self.greek_symbols))
+        self.place_symbol_buttons(self.greek_symbol_frame, self.greek_symbols)
+
+    def init_math_symbols(self):
         self.math_symbols = [
             '\u03C0',  # PI
             '\u00F7',  # Division
@@ -66,6 +91,11 @@ class SymbolSelector(Frame):
             '\u221E',  # Infinity
             '\u2260',  # Not equal
         ]
+
+        self.init_frame(self.math_symbol_frame, len(self.math_symbols))
+        self.place_symbol_buttons(self.math_symbol_frame, self.math_symbols)
+
+    def init_accent_symbols(self):
         self.accent_symbols = [
             '\u00A1',  # Inverted Exclamation Mark
             '\u00BF',  # Inverted Question Mark
@@ -91,6 +121,11 @@ class SymbolSelector(Frame):
             '\u00D4',  # Ô
             '\u00F4',  # ô
         ]
+
+        self.init_frame(self.accent_symbol_frame, len(self.accent_symbols))
+        self.place_symbol_buttons(self.accent_symbol_frame, self.accent_symbols)
+
+    def init_business_symbols(self):
         self.business_symbols = [
             '\u0080',  # Euro
             '\u0090',  # TM
@@ -109,11 +144,58 @@ class SymbolSelector(Frame):
             '\u2122',  # Trademark
         ]
 
-    def display(self):
-        self.pack()
+        self.init_frame(self.business_symbol_frame, len(self.business_symbols))
+        self.place_symbol_buttons(self.business_symbol_frame, self.business_symbols)
 
-        for unicode_value in self.greek_symbols:
-            Label(self, text=u'{unicode_value}'.format(unicode_value=unicode_value)).pack()
+    def init_frame(self, frame, num_symbols):
+        for i in range(0, self.width):
+            frame.columnconfigure(i, weight=1)
+
+        for i in range(0, math.ceil(num_symbols / self.width)):
+            frame.rowconfigure(i, weight=1)
+
+    def place_symbol_buttons(self, frame, symbols):
+        curr_row = 0
+        curr_col = 0
+        for symbol in symbols:
+            symbol_button = StyledTkinter.get_dark_button(
+                frame,
+                text=symbol,
+                command=lambda: self.select_symbol(symbol))
+            symbol_button.grid(row=curr_row, column=curr_col, sticky="news")
+
+            if curr_row >= self.width:
+                curr_row = curr_row + 1
+                curr_col = 0
+            else:
+                curr_col = curr_col + 1
+
+    def display(self):
+        self.place(x=0, y=25, height=150, width=150, bordermode=OUTSIDE)
+
+        for button in self.category_buttons:
+            button.pack(side=LEFT)
+
+        top_offset = 16
+        self.math_symbol_frame.place(y=top_offset)
+        self.greek_symbol_frame.place(y=top_offset)
+        self.accent_symbol_frame.place(y=top_offset)
+        self.business_symbol_frame.place(y=top_offset)
+
+    def select_greek_symbols(self):
+        self.greek_symbol_frame.tkraise()
+
+    def select_math_symbols(self):
+        self.math_symbol_frame.tkraise()
+
+    def select_accent_symbols(self):
+        self.accent_symbol_frame.tkraise()
+
+    def select_business_symbols(self):
+        self.business_symbol_frame.tkraise()
+
+    def select_symbol(self, symbol):
+        pass
 
     def hide(self):
-        self.pack_forget()
+        self.place_forget()
