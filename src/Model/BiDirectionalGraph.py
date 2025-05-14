@@ -81,19 +81,13 @@ class BiDirectionalGraph:
             curr_vertex = start
 
             while not done:
-                visited_neighbours = visited_paths.vertices[curr_vertex]
-                vertex_neighbours = self.vertices[curr_vertex]
-                available_neighbours = [x for x in vertex_neighbours if x not in visited_neighbours]
-                num_neighbours = len(available_neighbours)
+                available_neighbours = self.get_available_neighbours(curr_vertex, curr_path, visited_paths)
 
-                if num_neighbours == 0:
-                    curr_path.pop()
-                    curr_vertex = curr_path[-1]
-
-                    if not curr_path:
-                        done = True
+                if len(available_neighbours) == 0:
+                    done = self.remove_last_element(curr_path)
+                    curr_vertex = curr_path[0]
                 else:
-                    next_vertex = available_neighbours[randrange(num_neighbours)]
+                    next_vertex = available_neighbours[randrange(len(available_neighbours))]
                     visited_paths.add_vertex(next_vertex)
                     visited_paths.add_edge(curr_vertex, next_vertex)
                     curr_path.append(next_vertex)
@@ -105,3 +99,19 @@ class BiDirectionalGraph:
             return curr_path
         else:
             return []
+
+    def get_available_neighbours(self, curr_vertex, curr_path, visited_paths):
+        visited_neighbours = visited_paths.vertices[curr_vertex]
+        vertex_neighbours = self.vertices[curr_vertex]
+
+        return [x for x in vertex_neighbours if x not in visited_neighbours and x not in curr_path]
+
+    @staticmethod
+    def remove_last_element(self, curr_path):
+        curr_path.pop()
+
+        if not curr_path:
+            return True
+
+        return False
+
